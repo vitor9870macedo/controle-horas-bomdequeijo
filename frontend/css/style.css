@@ -1,4 +1,4 @@
-/* Reset e Variáveis */
+/* ==================== RESET E VARIÁVEIS ==================== */
 * {
   margin: 0;
   padding: 0;
@@ -6,340 +6,455 @@
 }
 
 :root {
-  --primary: #e63946;
-  --secondary: #457b9d;
-  --success: #2a9d8f;
-  --danger: #e63946;
-  --warning: #f4a261;
-  --dark: #1d3557;
-  --light: #f1faee;
-  --gray: #6c757d;
-  --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* Cores Tema Escuro */
+  --bg-dark: #000000;
+  --card-dark: #1a1a1a;
+  --card-hover: #222222;
+  --text-light: #ffffff;
+  --text-gray: #a0a0a0;
+  --border-dark: #333333;
+
+  /* Cores de Ação */
+  --primary: #00d9ff;
+  --primary-hover: #00b8d4;
+  --success: #00ff88;
+  --success-hover: #00cc6a;
+  --danger: #ff3366;
+  --danger-hover: #cc2952;
+  --warning: #ffaa00;
+
+  /* Sombras */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.7);
+  --glow-primary: 0 0 20px rgba(0, 217, 255, 0.3);
+  --glow-success: 0 0 20px rgba(0, 255, 136, 0.3);
+  --glow-danger: 0 0 20px rgba(255, 51, 102, 0.3);
 }
 
 body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: var(--bg-gradient);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-light);
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 15px;
+  line-height: 1.6;
 }
 
-/* Container Principal */
+/* Fundo com imagem para página de registro de ponto */
+body.funcionario-page {
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+    url("../imagens/arquivo fundo layout.png");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* ==================== CONTAINER ==================== */
 .container {
   width: 100%;
-  max-width: 500px;
-  animation: fadeIn 0.5s ease;
+  max-width: 450px;
+  animation: fadeIn 0.4s ease;
 }
 
 .admin-container {
-  max-width: 1200px;
+  max-width: 1400px;
 }
 
-/* Card */
+/* ==================== CARD ==================== */
 .card {
-  background: white;
-  border-radius: 20px;
-  padding: 40px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.5s ease;
+  background: var(--card-dark);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-dark);
+  animation: slideUp 0.4s ease;
 }
 
-/* Header */
+/* Card semi-transparente na página de funcionários */
+.funcionario-page .card {
+  background: rgba(26, 26, 26, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* ==================== HEADER ==================== */
 .header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
   position: relative;
 }
 
+.header-logo {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 16px;
+  display: block;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 217, 255, 0.2);
+  object-fit: cover;
+}
+
 .header h1 {
-  color: var(--dark);
-  font-size: 2.5rem;
-  margin-bottom: 10px;
+  color: var(--text-light);
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.header.with-logo h1 {
+  display: none;
+}
+
+.header.with-logo .subtitle {
+  display: block;
+  margin-top: 8px;
 }
 
 .subtitle {
-  color: var(--gray);
-  font-size: 1.1rem;
+  color: var(--text-gray);
+  font-size: 0.95rem;
 }
 
 .back-btn {
   position: absolute;
   left: 0;
   top: 0;
-  color: var(--secondary);
+  color: var(--primary);
   text-decoration: none;
   font-weight: 600;
-  padding: 8px 15px;
+  padding: 6px 12px;
   border-radius: 8px;
   transition: all 0.3s;
+  font-size: 0.9rem;
 }
 
 .back-btn:hover {
-  background: var(--light);
+  background: var(--card-hover);
+  box-shadow: var(--glow-primary);
 }
 
-/* Relógio */
+/* ==================== RELÓGIO ==================== */
 .clock-display {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 15px;
-  padding: 30px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  border: 2px solid var(--primary);
+  border-radius: 12px;
+  padding: 20px;
   text-align: center;
-  margin-bottom: 30px;
-  color: white;
+  margin-bottom: 24px;
+  box-shadow: var(--glow-primary);
 }
 
 .current-time {
-  font-size: 3.5rem;
+  font-size: 2.2rem;
   font-weight: 700;
   letter-spacing: 2px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  color: var(--primary);
+  text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
 }
 
 .current-date {
-  font-size: 1.1rem;
-  opacity: 0.9;
+  font-size: 0.95rem;
+  color: var(--text-gray);
   text-transform: capitalize;
 }
 
-/* Botões */
+/* ==================== BOTÕES ==================== */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 15px 30px;
+  gap: 8px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 12px;
-  font-size: 1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
   text-decoration: none;
-  color: white;
+  color: var(--bg-dark);
+  font-family: inherit;
 }
 
 .btn-large {
   width: 100%;
-  padding: 20px;
-  font-size: 1.2rem;
+  padding: 16px;
+  font-size: 1rem;
 }
 
 .btn-small {
   padding: 8px 16px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .btn-icon {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary);
+  color: var(--bg-dark);
 }
 
 .btn-primary:hover {
+  background: var(--primary-hover);
+  box-shadow: var(--glow-primary);
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
 }
 
 .btn-secondary {
-  background: var(--secondary);
+  background: var(--card-hover);
+  color: var(--text-light);
+  border: 1px solid var(--border-dark);
 }
 
 .btn-secondary:hover {
-  background: #3d6a87;
+  background: #333;
   transform: translateY(-2px);
 }
 
 .btn-success {
   background: var(--success);
+  color: var(--bg-dark);
 }
 
 .btn-success:hover {
-  background: #238276;
+  background: var(--success-hover);
+  box-shadow: var(--glow-success);
   transform: translateY(-2px);
 }
 
 .btn-danger {
   background: var(--danger);
+  color: var(--text-light);
 }
 
 .btn-danger:hover {
-  background: #d62839;
+  background: var(--danger-hover);
+  box-shadow: var(--glow-danger);
   transform: translateY(-2px);
 }
 
-/* Menu */
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ==================== MENU ==================== */
 .menu-options {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
 }
 
-/* Formulários */
+/* ==================== FORMULÁRIOS ==================== */
 .ponto-form,
 .admin-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .form-group label {
   font-weight: 600;
-  color: var(--dark);
+  color: var(--text-light);
+  font-size: 0.9rem;
 }
 
 .form-group input,
 .form-group select {
-  padding: 15px;
-  border: 2px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 1rem;
+  padding: 12px;
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: var(--card-hover);
+  color: var(--text-light);
   transition: all 0.3s;
+  font-family: inherit;
 }
 
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+  background: var(--card-dark);
 }
 
-/* Botões de Ação */
+.form-group input::placeholder {
+  color: var(--text-gray);
+}
+
+/* ==================== ACTION BUTTONS ==================== */
 .action-buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 8px;
 }
 
-/* Mensagens */
+/* ==================== MENSAGENS ==================== */
 .message {
-  padding: 15px;
-  border-radius: 10px;
-  margin-top: 20px;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 16px;
   font-weight: 600;
   text-align: center;
   display: none;
+  font-size: 0.9rem;
 }
 
 .message.success {
-  background: #d4edda;
-  color: #155724;
+  background: rgba(0, 255, 136, 0.1);
+  color: var(--success);
+  border: 1px solid var(--success);
   display: block;
 }
 
 .message.error {
-  background: #f8d7da;
-  color: #721c24;
+  background: rgba(255, 51, 102, 0.1);
+  color: var(--danger);
+  border: 1px solid var(--danger);
   display: block;
 }
 
 .message.info {
-  background: #d1ecf1;
-  color: #0c5460;
+  background: rgba(0, 217, 255, 0.1);
+  color: var(--primary);
+  border: 1px solid var(--primary);
   display: block;
 }
 
-/* Info de Registro */
+/* ==================== REGISTRO INFO ==================== */
 .registro-info {
-  background: var(--light);
-  padding: 15px;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  color: var(--dark);
+  background: var(--card-hover);
+  border: 1px solid var(--border-dark);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--text-gray);
 }
 
-/* Footer */
+/* ==================== FOOTER ==================== */
 .footer {
   text-align: center;
-  margin-top: 30px;
-  color: var(--gray);
-  font-size: 0.9rem;
+  margin-top: 24px;
+  color: var(--text-gray);
+  font-size: 0.85rem;
 }
 
-/* Admin Dashboard */
+/* ==================== ADMIN DASHBOARD ==================== */
 .admin-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: white;
-  padding: 20px 40px;
-  border-radius: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  background: var(--card-dark);
+  padding: 16px 24px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-dark);
 }
 
 .admin-header h1 {
-  color: var(--dark);
-  font-size: 1.8rem;
+  color: var(--text-light);
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .dashboard {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
-/* Filtros */
+/* ==================== FILTROS ==================== */
 .filters {
-  padding: 25px;
+  padding: 20px;
+}
+
+.filters h2 {
+  font-size: 1.2rem;
+  margin-bottom: 16px;
 }
 
 .filter-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-  margin-top: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
 }
 
-/* Stats Cards */
+/* ==================== STATS CARDS ==================== */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
+  gap: 16px;
 }
 
 .stat-card {
-  background: white;
-  padding: 25px;
-  border-radius: 15px;
+  background: var(--card-dark);
+  padding: 20px;
+  border-radius: 12px;
   text-align: center;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-dark);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s;
+}
+
+.stat-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--glow-primary);
 }
 
 .stat-value {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--primary);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .stat-label {
-  color: var(--gray);
-  font-size: 0.95rem;
+  color: var(--text-gray);
+  font-size: 0.85rem;
 }
 
-/* Tabelas */
+/* ==================== TABELAS ==================== */
 .table-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.table-header h2 {
+  font-size: 1.2rem;
 }
 
 .table-container {
   overflow-x: auto;
-  margin-top: 15px;
+  margin-top: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-dark);
 }
 
 table {
@@ -348,72 +463,232 @@ table {
 }
 
 thead {
-  background: var(--dark);
-  color: white;
+  background: var(--card-hover);
+  color: var(--text-light);
 }
 
 th {
-  padding: 15px;
+  padding: 12px;
   text-align: left;
   font-weight: 600;
+  font-size: 0.85rem;
+  border-bottom: 2px solid var(--border-dark);
+  white-space: nowrap;
 }
 
 td {
-  padding: 15px;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 12px;
+  border-bottom: 1px solid var(--border-dark);
+  font-size: 0.9rem;
+}
+
+tbody tr {
+  transition: background 0.2s;
 }
 
 tbody tr:hover {
-  background: var(--light);
+  background: var(--card-hover);
 }
 
 .status-badge {
   display: inline-block;
-  padding: 5px 15px;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
   font-weight: 600;
 }
 
 .status-badge.completo {
-  background: #d4edda;
-  color: #155724;
+  background: rgba(0, 255, 136, 0.2);
+  color: var(--success);
 }
 
 .status-badge.incompleto {
-  background: #fff3cd;
-  color: #856404;
+  background: rgba(255, 170, 0, 0.2);
+  color: var(--warning);
 }
 
 .status-badge.ativo {
-  background: #d4edda;
-  color: #155724;
+  background: rgba(0, 255, 136, 0.2);
+  color: var(--success);
 }
 
 .status-badge.inativo {
-  background: #f8d7da;
-  color: #721c24;
+  background: rgba(255, 51, 102, 0.2);
+  color: var(--danger);
 }
 
-/* Utilitários */
+.status-badge.pago {
+  background: rgba(0, 255, 136, 0.2);
+  color: var(--success);
+}
+
+.status-badge.nao-pago {
+  background: rgba(255, 170, 0, 0.2);
+  color: var(--warning);
+}
+
+/* ==================== ABAS DE NAVEGAÇÃO ==================== */
+.tabs-container {
+  margin-top: 24px;
+}
+
+.tabs-header {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border-dark);
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+
+.tab-btn:hover {
+  color: var(--primary);
+}
+
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* ==================== GESTÃO DE PAGAMENTOS ==================== */
+#pagamentosContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  gap: 20px;
+}
+
+.funcionario-pagamento-card {
+  background: var(--card-hover);
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.funcionario-pagamento-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.funcionario-pagamento-header:hover {
+  background: rgba(0, 217, 255, 0.05);
+}
+
+.funcionario-pagamento-header h3 {
+  margin: 0;
+  color: var(--primary);
+  font-size: 1.1rem;
+}
+
+.funcionario-pagamento-body {
+  padding: 0 16px 16px 16px;
+  border-top: 1px solid var(--border-dark);
+}
+
+.pagamento-section {
+  margin-top: 12px;
+}
+
+.pagamento-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.registro-pagamento-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 6px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-dark);
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.registro-pagamento-item:hover {
+  border-color: var(--primary);
+  background: rgba(0, 217, 255, 0.05);
+}
+
+.registro-pagamento-item.pago {
+  opacity: 0.7;
+}
+
+.registro-pagamento-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+  margin-right: 16px;
+}
+
+.registro-pagamento-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==================== BTN DELETE ==================== */
+.btn-delete {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+.btn-delete:hover {
+  background: var(--danger);
+  color: var(--text-light);
+}
+
+/* ==================== UTILITÁRIOS ==================== */
 .mb-2 {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .form-container {
-  background: var(--light);
-  padding: 20px;
-  border-radius: 10px;
-  margin-bottom: 20px;
+  background: var(--card-hover);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-dark);
 }
 
 .form-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 15px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
-/* Animações */
+/* ==================== ANIMAÇÕES ==================== */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -425,7 +700,7 @@ tbody tr:hover {
 
 @keyframes slideUp {
   from {
-    transform: translateY(30px);
+    transform: translateY(20px);
     opacity: 0;
   }
   to {
@@ -434,28 +709,63 @@ tbody tr:hover {
   }
 }
 
-/* Responsivo */
+/* ==================== RESPONSIVO MOBILE ==================== */
 @media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
   .card {
-    padding: 25px;
+    padding: 16px;
   }
 
   .header h1 {
-    font-size: 2rem;
+    font-size: 1.5rem;
+  }
+
+  .header-logo {
+    width: 120px;
+    height: 120px;
   }
 
   .current-time {
-    font-size: 2.5rem;
+    font-size: 1.8rem;
+    letter-spacing: 1px;
+  }
+
+  .current-date {
+    font-size: 0.85rem;
   }
 
   .action-buttons {
     grid-template-columns: 1fr;
   }
 
+  .btn-large {
+    padding: 14px;
+    font-size: 0.95rem;
+  }
+
   .admin-header {
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
     text-align: center;
+    padding: 16px;
+  }
+
+  .admin-header h1 {
+    font-size: 1.2rem;
+    order: -1;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .header-actions .btn {
+    flex: 1;
+    max-width: 150px;
   }
 
   .filter-grid {
@@ -466,12 +776,158 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
 
+  .stat-value {
+    font-size: 1.8rem;
+  }
+
   .table-container {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+    overflow-x: auto;
   }
 
   th,
   td {
-    padding: 10px 8px;
+    padding: 8px 6px;
+    font-size: 0.8rem;
+  }
+
+  /* Tabela de funcionários em formato de cards no mobile */
+  #tab-funcionarios .table-container table {
+    display: block;
+  }
+
+  #tab-funcionarios thead {
+    display: none;
+  }
+
+  #tab-funcionarios tbody {
+    display: block;
+  }
+
+  #tab-funcionarios tr {
+    display: block;
+    background: var(--card-hover);
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  #tab-funcionarios td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border: none;
+  }
+
+  #tab-funcionarios td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-right: 12px;
+  }
+
+  #tab-funcionarios td:first-child {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    border-bottom: 1px solid var(--border-dark);
+    padding-bottom: 12px;
+    margin-bottom: 8px;
+  }
+
+  #tab-funcionarios td:first-child::before {
+    content: "";
+  }
+
+  #tab-funcionarios td:last-child {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-dark);
+    margin-top: 8px;
+  }
+
+  #tab-funcionarios td:last-child::before {
+    display: none;
+  }
+
+  #tab-funcionarios td:last-child button {
+    width: 100%;
+  }
+
+  .table-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .table-header h2 {
+    font-size: 1.1rem;
+  }
+
+  /* Esconder colunas menos importantes em mobile */
+  .hide-mobile {
+    display: none;
+  }
+
+  /* Gestão de pagamentos mobile */
+  #pagamentosContainer {
+    grid-template-columns: 1fr;
+  }
+
+  .funcionario-pagamento-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .funcionario-pagamento-header > div:last-child {
+    text-align: left !important;
+    width: 100%;
+  }
+
+  .registro-pagamento-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .registro-pagamento-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-right: 0;
+    width: 100%;
+  }
+
+  .registro-pagamento-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .registro-pagamento-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .current-time {
+    font-size: 1.6rem;
+  }
+
+  .header h1 {
+    font-size: 1.3rem;
+  }
+
+  th,
+  td {
+    padding: 6px 4px;
+    font-size: 0.75rem;
+  }
+
+  .btn {
+    font-size: 0.85rem;
   }
 }

@@ -18,6 +18,16 @@ const filterDataInicio = document.getElementById("filterDataInicio");
 const filterDataFim = document.getElementById("filterDataFim");
 const applyFiltersBtn = document.getElementById("applyFilters");
 
+// Filtros de Pagamento
+const filterPagamentoFunc = document.getElementById("filterPagamentoFunc");
+const filterPagamentoPeriodo = document.getElementById(
+  "filterPagamentoPeriodo"
+);
+const filterPagamentoStatus = document.getElementById("filterPagamentoStatus");
+const applyPagamentoFiltersBtn = document.getElementById(
+  "applyPagamentoFilters"
+);
+
 // Stats
 const totalRegistrosEl = document.getElementById("totalRegistros");
 const totalHorasEl = document.getElementById("totalHoras");
@@ -96,10 +106,30 @@ logoutBtn.addEventListener("click", async () => {
   showLogin();
 });
 
+// ==================== CONTROLE DE ABAS ====================
+document.querySelectorAll(".tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const tabName = btn.getAttribute("data-tab");
+
+    // Remover active de todos os botões e conteúdos
+    document
+      .querySelectorAll(".tab-btn")
+      .forEach((b) => b.classList.remove("active"));
+    document
+      .querySelectorAll(".tab-content")
+      .forEach((c) => c.classList.remove("active"));
+
+    // Adicionar active no botão e conteúdo clicado
+    btn.classList.add("active");
+    document.getElementById(`tab-${tabName}`).classList.add("active");
+  });
+});
+
 // Carregar dados do dashboard
 async function loadDashboardData() {
   await loadFuncionarios();
   await loadRegistros();
+  await loadPagamentos();
   await updateStats();
 }
 
@@ -115,11 +145,17 @@ async function loadFuncionarios() {
 
     // Preencher filtro
     filterFuncionario.innerHTML = '<option value="">Todos</option>';
+    filterPagamentoFunc.innerHTML = '<option value="">Todos</option>';
     data.forEach((func) => {
       const option = document.createElement("option");
       option.value = func.id;
       option.textContent = func.nome;
       filterFuncionario.appendChild(option);
+
+      const optionPagamento = document.createElement("option");
+      optionPagamento.value = func.id;
+      optionPagamento.textContent = func.nome;
+      filterPagamentoFunc.appendChild(optionPagamento);
     });
 
     // Preencher tabela de funcionários
@@ -127,15 +163,24 @@ async function loadFuncionarios() {
     data.forEach((func) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-                <td><strong>${func.nome}</strong></td>
-                <td>
+                <td data-label="Nome"><strong>${func.nome}</strong></td>
+                <td data-label="Status">
                     <span class="status-badge ${
                       func.ativo ? "ativo" : "inativo"
                     }">
                         ${func.ativo ? "Ativo" : "Inativo"}
                     </span>
                 </td>
-                <td>
+                <td data-label="Valor/Hora">
+                    <input type="number" 
+                           value="${func.valor_hora || 0}" 
+                           step="0.01" 
+                           min="0"
+                           onchange="updateValorHora('${func.id}', this.value)"
+                           style="width: 100px; padding: 6px; background: var(--card-hover); color: var(--text-light); border: 1px solid var(--border-dark); border-radius: 6px;"
+                    />
+                </td>
+                <td data-label="Ações">
                     <button class="btn btn-small ${
                       func.ativo ? "btn-danger" : "btn-success"
                     }" 
@@ -143,6 +188,12 @@ async function loadFuncionarios() {
         func.ativo
       })">
                         ${func.ativo ? "Desativar" : "Ativar"}
+                    </button>
+                    <button class="btn btn-small btn-delete" 
+                            onclick="deleteFuncionario('${func.id}', '${
+        func.nome
+      }')">
+                        🗑️ Excluir
                     </button>
                 </td>
             `;
@@ -158,7 +209,7 @@ async function loadRegistros(filtros = {}) {
   try {
     let query = supabase
       .from("registros_ponto")
-      .select("*, funcionarios(nome)")
+      .select("*, funcionarios(nome, valor_hora)")
       .order("data", { ascending: false })
       .order("entrada", { ascending: false });
 
@@ -172,6 +223,13 @@ async function loadRegistros(filtros = {}) {
 
     if (filtros.dataFim) {
       query = query.lte("data", filtros.dataFim);
+    }
+
+    // Filtro de status de pagamento
+    if (filtros.statusPagamento === "pago") {
+      query = query.eq("pago", true);
+    } else if (filtros.statusPagamento === "nao_pago") {
+      query = query.eq("pago", false);
     }
 
     const { data, error } = await query;
@@ -211,8 +269,22 @@ async function loadRegistros(filtros = {}) {
           )}min`
         : "--";
 
+      const valorHora = parseFloat(registro.funcionarios?.valor_hora || 0);
+      const horas = parseFloat(registro.total_horas || 0);
+      const valorReceber =
+        horas > 0 && valorHora > 0
+          ? `R$ ${(horas * valorHora).toFixed(2)}`
+          : "--";
+
       const status = registro.saida ? "completo" : "incompleto";
       const statusText = registro.saida ? "Completo" : "Em aberto";
+
+      const pagoStatus = registro.pago ? "pago" : "nao-pago";
+      const pagoText = registro.pago ? "✅ Pago" : "⏳ Pendente";
+      const btnPagoText = registro.pago
+        ? "Marcar como Não Pago"
+        : "✅ Marcar como Pago";
+      const btnPagoClass = registro.pago ? "btn-secondary" : "btn-success";
 
       tr.innerHTML = `
                 <td><strong>${registro.funcionarios.nome}</strong></td>
@@ -220,6 +292,7 @@ async function loadRegistros(filtros = {}) {
                 <td>${entradaFormatada}</td>
                 <td>${saidaFormatada}</td>
                 <td><strong>${totalHoras}</strong></td>
+                <td><strong style="color: var(--success);">${valorReceber}</strong></td>
                 <td><span class="status-badge ${status}">${statusText}</span></td>
             `;
       registrosTableBody.appendChild(tr);
@@ -230,25 +303,47 @@ async function loadRegistros(filtros = {}) {
 }
 
 // Atualizar estatísticas
-async function updateStats() {
+async function updateStats(filtros = {}) {
   try {
-    // Total de registros
-    const { count: totalRegistros } = await supabase
+    // Construir query com filtros
+    let query = supabase
       .from("registros_ponto")
-      .select("*", { count: "exact", head: true });
+      .select("total_horas, funcionarios(valor_hora)", { count: "exact" })
+      .not("total_horas", "is", null);
+
+    // Aplicar filtros se existirem
+    if (filtros.funcionarioId) {
+      query = query.eq("funcionario_id", filtros.funcionarioId);
+    }
+    if (filtros.dataInicio) {
+      query = query.gte("data", filtros.dataInicio);
+    }
+    if (filtros.dataFim) {
+      query = query.lte("data", filtros.dataFim);
+    }
+
+    const { data: registros, count: totalRegistros } = await query;
 
     totalRegistrosEl.textContent = totalRegistros || 0;
 
     // Total de horas
-    const { data: registros } = await supabase
-      .from("registros_ponto")
-      .select("total_horas")
-      .not("total_horas", "is", null);
-
     const totalHoras =
       registros?.reduce((sum, r) => sum + parseFloat(r.total_horas || 0), 0) ||
       0;
     totalHorasEl.textContent = `${Math.floor(totalHoras)}h`;
+
+    // Calcular total a pagar
+    const totalPagar =
+      registros?.reduce((sum, r) => {
+        const horas = parseFloat(r.total_horas || 0);
+        const valorHora = parseFloat(r.funcionarios?.valor_hora || 0);
+        return sum + horas * valorHora;
+      }, 0) || 0;
+
+    const totalPagarEl = document.getElementById("totalPagar");
+    if (totalPagarEl) {
+      totalPagarEl.textContent = `R$ ${totalPagar.toFixed(2)}`;
+    }
 
     // Funcionários ativos
     const { count: funcionariosAtivos } = await supabase
@@ -264,13 +359,78 @@ async function updateStats() {
 
 // Aplicar filtros
 applyFiltersBtn.addEventListener("click", () => {
+  const statusPagamento =
+    document.getElementById("filterPagamento")?.value || null;
   const filtros = {
     funcionarioId: filterFuncionario.value || null,
     dataInicio: filterDataInicio.value || null,
     dataFim: filterDataFim.value || null,
+    statusPagamento: statusPagamento,
   };
   loadRegistros(filtros);
+  updateStats(filtros);
 });
+
+// Aplicar filtros de pagamento
+applyPagamentoFiltersBtn.addEventListener("click", () => {
+  const filtros = {
+    funcionarioId: filterPagamentoFunc.value || null,
+    periodo: filterPagamentoPeriodo.value || null,
+    status: filterPagamentoStatus.value || null,
+  };
+  loadPagamentos(filtros);
+});
+
+// Marcar/desmarcar pagamento
+window.togglePagamento = async (registroId, statusAtual) => {
+  try {
+    const novoPago = !statusAtual;
+    const agora = new Date().toISOString();
+
+    const { error } = await supabase
+      .from("registros_ponto")
+      .update({
+        pago: novoPago,
+        data_pagamento: novoPago ? agora : null,
+      })
+      .eq("id", registroId);
+
+    if (error) throw error;
+
+    // Recarregar dados
+    await loadPagamentos();
+    await loadRegistros();
+    await updateStats();
+  } catch (error) {
+    console.error("Erro ao atualizar pagamento:", error);
+    alert("❌ Erro ao atualizar status de pagamento");
+  }
+};
+
+// Atualizar valor/hora do funcionário
+window.updateValorHora = async (funcionarioId, valorHora) => {
+  try {
+    const valor = parseFloat(valorHora);
+    if (isNaN(valor) || valor < 0) {
+      alert("❌ Valor inválido!");
+      await loadFuncionarios();
+      return;
+    }
+
+    const { error } = await supabase
+      .from("funcionarios")
+      .update({ valor_hora: valor })
+      .eq("id", funcionarioId);
+
+    if (error) throw error;
+
+    await loadRegistros();
+    await updateStats();
+  } catch (error) {
+    console.error("Erro ao atualizar valor/hora:", error);
+    alert("❌ Erro ao atualizar valor/hora");
+  }
+};
 
 // Toggle status do funcionário
 window.toggleFuncionarioStatus = async (funcionarioId, statusAtual) => {
@@ -290,6 +450,255 @@ window.toggleFuncionarioStatus = async (funcionarioId, statusAtual) => {
   }
 };
 
+// Excluir funcionário
+window.deleteFuncionario = async (funcionarioId, nome) => {
+  if (
+    !confirm(
+      `⚠️ Deseja realmente excluir o funcionário "${nome}"?\n\nEsta ação também excluirá todos os registros de ponto deste funcionário e NÃO pode ser desfeita!`
+    )
+  ) {
+    return;
+  }
+
+  try {
+    const { error } = await supabase
+      .from("funcionarios")
+      .delete()
+      .eq("id", funcionarioId);
+
+    if (error) throw error;
+
+    alert("✅ Funcionário excluído com sucesso!");
+    await loadFuncionarios();
+    await updateStats();
+    await loadRegistros();
+  } catch (error) {
+    console.error("Erro ao excluir funcionário:", error);
+    alert("❌ Erro ao excluir funcionário");
+  }
+};
+
+// Carregar pagamentos agrupados por funcionário
+async function loadPagamentos(filtros = {}) {
+  try {
+    let query = supabase
+      .from("registros_ponto")
+      .select(
+        `
+        *,
+        funcionarios (id, nome, valor_hora)
+      `
+      )
+      .not("saida", "is", null)
+      .order("data", { ascending: false });
+
+    // Aplicar filtro de funcionário
+    if (filtros.funcionarioId) {
+      query = query.eq("funcionario_id", filtros.funcionarioId);
+    }
+
+    // Aplicar filtro de período
+    if (filtros.periodo) {
+      const hoje = new Date();
+      let dataInicio;
+
+      if (filtros.periodo === "mes_atual") {
+        dataInicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      } else if (filtros.periodo === "mes_anterior") {
+        dataInicio = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+        const dataFim = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
+        query = query.lte("data", dataFim.toISOString().split("T")[0]);
+      } else if (filtros.periodo === "7dias") {
+        dataInicio = new Date(hoje);
+        dataInicio.setDate(dataInicio.getDate() - 7);
+      } else if (filtros.periodo === "30dias") {
+        dataInicio = new Date(hoje);
+        dataInicio.setDate(dataInicio.getDate() - 30);
+      }
+
+      if (dataInicio) {
+        query = query.gte("data", dataInicio.toISOString().split("T")[0]);
+      }
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    // Filtrar por status de pagamento se necessário
+    let registrosFiltrados = data;
+    if (filtros.status === "pendente") {
+      registrosFiltrados = data.filter((r) => !r.pago);
+    } else if (filtros.status === "pago") {
+      registrosFiltrados = data.filter((r) => r.pago);
+    }
+
+    // Agrupar registros por funcionário
+    const registrosPorFuncionario = {};
+    registrosFiltrados.forEach((registro) => {
+      const funcId = registro.funcionarios.id;
+      if (!registrosPorFuncionario[funcId]) {
+        registrosPorFuncionario[funcId] = {
+          funcionario: registro.funcionarios,
+          registros: [],
+          totalHoras: 0,
+          totalPagar: 0,
+          totalPendente: 0,
+        };
+      }
+
+      const horas = parseFloat(registro.total_horas || 0);
+      const valorHora = parseFloat(registro.funcionarios.valor_hora || 0);
+      const valorReceber = horas * valorHora;
+
+      registrosPorFuncionario[funcId].registros.push(registro);
+      registrosPorFuncionario[funcId].totalHoras += horas;
+      registrosPorFuncionario[funcId].totalPagar += valorReceber;
+
+      if (!registro.pago) {
+        registrosPorFuncionario[funcId].totalPendente += valorReceber;
+      }
+    });
+
+    // Renderizar interface de pagamentos
+    const pagamentosContainer = document.getElementById("pagamentosContainer");
+    pagamentosContainer.innerHTML = "";
+
+    if (Object.keys(registrosPorFuncionario).length === 0) {
+      pagamentosContainer.innerHTML =
+        '<p style="text-align: center; color: var(--text-muted);">Nenhum registro encontrado</p>';
+      return;
+    }
+
+    Object.values(registrosPorFuncionario).forEach((grupo) => {
+      const funcionarioCard = document.createElement("div");
+      funcionarioCard.className = "funcionario-pagamento-card";
+
+      const registrosPendentes = grupo.registros.filter((r) => !r.pago);
+      const registrosPagos = grupo.registros.filter((r) => r.pago);
+
+      funcionarioCard.innerHTML = `
+        <div class="funcionario-pagamento-header" onclick="toggleFuncionarioPagamento('${
+          grupo.funcionario.id
+        }')">
+          <div>
+            <h3>${grupo.funcionario.nome}</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">
+              ${
+                grupo.registros.length
+              } registro(s) • ${grupo.totalHoras.toFixed(1)}h trabalhadas
+            </p>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 1.2rem; color: var(--success); font-weight: 600;">
+              R$ ${grupo.totalPagar.toFixed(2)}
+            </div>
+            <div style="font-size: 0.9rem; color: var(--warning); margin-top: 4px;">
+              ${
+                registrosPendentes.length > 0
+                  ? `⏳ R$ ${grupo.totalPendente.toFixed(2)} pendente`
+                  : "✅ Tudo pago"
+              }
+            </div>
+          </div>
+        </div>
+        <div class="funcionario-pagamento-body" id="pagamento-body-${
+          grupo.funcionario.id
+        }" style="display: none;">
+          ${
+            registrosPendentes.length > 0
+              ? `
+            <div class="pagamento-section">
+              <h4 style="color: var(--warning); margin-bottom: 12px;">⏳ Pendentes (${
+                registrosPendentes.length
+              })</h4>
+              ${registrosPendentes
+                .map((r) => renderRegistroPagamento(r, grupo.funcionario))
+                .join("")}
+            </div>
+          `
+              : ""
+          }
+          ${
+            registrosPagos.length > 0
+              ? `
+            <div class="pagamento-section">
+              <h4 style="color: var(--success); margin-bottom: 12px;">✅ Pagos (${
+                registrosPagos.length
+              })</h4>
+              ${registrosPagos
+                .map((r) => renderRegistroPagamento(r, grupo.funcionario))
+                .join("")}
+            </div>
+          `
+              : ""
+          }
+        </div>
+      `;
+
+      pagamentosContainer.appendChild(funcionarioCard);
+    });
+  } catch (error) {
+    console.error("Erro ao carregar pagamentos:", error);
+  }
+}
+
+// Renderizar um registro de pagamento
+function renderRegistroPagamento(registro, funcionario) {
+  const dataFormatada = new Date(
+    registro.data + "T00:00:00"
+  ).toLocaleDateString("pt-BR");
+  const horas = parseFloat(registro.total_horas || 0);
+  const valorHora = parseFloat(funcionario.valor_hora || 0);
+  const valorReceber = horas * valorHora;
+
+  const dataPagamento = registro.data_pagamento
+    ? new Date(registro.data_pagamento).toLocaleDateString("pt-BR")
+    : "";
+
+  return `
+    <div class="registro-pagamento-item ${registro.pago ? "pago" : ""}">
+      <div class="registro-pagamento-info">
+        <div>
+          <strong>${dataFormatada}</strong>
+          <span style="color: var(--text-muted); margin-left: 8px;">
+            ${horas.toFixed(1)}h × R$ ${valorHora.toFixed(2)}/h
+          </span>
+        </div>
+        <div style="color: var(--success); font-weight: 600; font-size: 1.1rem;">
+          R$ ${valorReceber.toFixed(2)}
+        </div>
+      </div>
+      <div class="registro-pagamento-actions">
+        ${
+          registro.pago
+            ? `
+          <span class="status-badge pago" style="margin-right: 8px;">✅ Pago em ${dataPagamento}</span>
+          <button class="btn btn-small btn-secondary" onclick="togglePagamento('${registro.id}', true)">
+            Marcar como Não Pago
+          </button>
+        `
+            : `
+          <button class="btn btn-small btn-success" onclick="togglePagamento('${registro.id}', false)">
+            ✅ Marcar como Pago
+          </button>
+        `
+        }
+      </div>
+    </div>
+  `;
+}
+
+// Toggle expansão do funcionário
+window.toggleFuncionarioPagamento = (funcionarioId) => {
+  const body = document.getElementById(`pagamento-body-${funcionarioId}`);
+  if (body.style.display === "none") {
+    body.style.display = "block";
+  } else {
+    body.style.display = "none";
+  }
+};
+
 // Adicionar funcionário
 addFuncionarioBtn.addEventListener("click", () => {
   addFuncionarioForm.style.display = "block";
@@ -305,12 +714,19 @@ novoFuncionarioForm.addEventListener("submit", async (e) => {
 
   const nome = document.getElementById("novoNome").value;
   const pin = document.getElementById("novoPin").value;
+  const valorHora = parseFloat(document.getElementById("novoValorHora").value);
+
+  if (isNaN(valorHora) || valorHora < 0) {
+    alert("❌ Valor/hora inválido!");
+    return;
+  }
 
   try {
     const { error } = await supabase.from("funcionarios").insert([
       {
         nome,
         pin,
+        valor_hora: valorHora,
         role: "funcionario",
         ativo: true,
       },
@@ -334,13 +750,14 @@ exportBtn.addEventListener("click", async () => {
   try {
     const { data, error } = await supabase
       .from("registros_ponto")
-      .select("*, funcionarios(nome)")
+      .select("*, funcionarios(nome, valor_hora)")
       .order("data", { ascending: false });
 
     if (error) throw error;
 
     // Criar CSV
-    let csv = "Funcionário,Data,Entrada,Saída,Total de Horas,Status\n";
+    let csv =
+      "Funcionário,Data,Entrada,Saída,Total de Horas,Valor a Receber,Status\n";
 
     data.forEach((registro) => {
       const dataFormatada = new Date(
@@ -353,9 +770,13 @@ exportBtn.addEventListener("click", async () => {
         ? new Date(registro.saida).toLocaleTimeString("pt-BR")
         : "";
       const totalHoras = registro.total_horas || "";
+      const valorReceber =
+        registro.total_horas && registro.funcionarios.valor_hora
+          ? (registro.total_horas * registro.funcionarios.valor_hora).toFixed(2)
+          : "";
       const status = registro.saida ? "Completo" : "Em aberto";
 
-      csv += `"${registro.funcionarios.nome}","${dataFormatada}","${entradaFormatada}","${saidaFormatada}","${totalHoras}","${status}"\n`;
+      csv += `"${registro.funcionarios.nome}","${dataFormatada}","${entradaFormatada}","${saidaFormatada}","${totalHoras}","R$ ${valorReceber}","${status}"\n`;
     });
 
     // Download
@@ -382,14 +803,6 @@ function showMessage(element, text, type) {
     element.textContent = "";
   }, 3000);
 }
-
-// Definir datas padrão nos filtros (últimos 30 dias)
-const hoje = new Date();
-const trintaDiasAtras = new Date(hoje);
-trintaDiasAtras.setDate(hoje.getDate() - 30);
-
-filterDataInicio.valueAsDate = trintaDiasAtras;
-filterDataFim.valueAsDate = hoje;
 
 // Inicializar
 checkSession();

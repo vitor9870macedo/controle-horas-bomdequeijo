@@ -14,13 +14,26 @@
   <body>
     <div class="container admin-container">
       <div class="admin-header">
-        <a href="../../index.html" class="back-btn">← Voltar</a>
         <h1>⚙️ Painel do Administrador</h1>
-        <button id="logoutBtn" class="btn btn-small btn-secondary">Sair</button>
+        <div class="header-actions">
+          <a href="../../index.html" class="btn btn-small btn-secondary"
+            >← Voltar</a
+          >
+          <button id="logoutBtn" class="btn btn-small btn-secondary">
+            Sair
+          </button>
+        </div>
       </div>
 
       <!-- Login do Admin -->
       <div id="loginSection" class="card">
+        <div class="header with-logo">
+          <img
+            src="../imagens/arquivo para modal.jfif"
+            alt="Bom de Queijo"
+            class="header-logo"
+          />
+        </div>
         <h2>Login de Administrador</h2>
         <form id="loginForm" class="admin-form">
           <div class="form-group">
@@ -50,32 +63,6 @@
 
       <!-- Dashboard do Admin -->
       <div id="dashboardSection" class="dashboard" style="display: none">
-        <!-- Filtros -->
-        <div class="card filters">
-          <h2>Filtros</h2>
-          <div class="filter-grid">
-            <div class="form-group">
-              <label for="filterFuncionario">Funcionário:</label>
-              <select id="filterFuncionario">
-                <option value="">Todos</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="filterDataInicio">Data Início:</label>
-              <input type="date" id="filterDataInicio" />
-            </div>
-            <div class="form-group">
-              <label for="filterDataFim">Data Fim:</label>
-              <input type="date" id="filterDataFim" />
-            </div>
-            <div class="form-group">
-              <button id="applyFilters" class="btn btn-primary">
-                Aplicar Filtros
-              </button>
-            </div>
-          </div>
-        </div>
-
         <!-- Resumo -->
         <div class="stats-grid">
           <div class="stat-card">
@@ -87,98 +74,222 @@
             <div class="stat-label">Total de Horas</div>
           </div>
           <div class="stat-card">
+            <div
+              class="stat-value"
+              id="totalPagar"
+              style="color: var(--success)"
+            >
+              R$ 0,00
+            </div>
+            <div class="stat-label">Total a Pagar</div>
+          </div>
+          <div class="stat-card">
             <div class="stat-value" id="funcionariosAtivos">0</div>
             <div class="stat-label">Funcionários Ativos</div>
           </div>
         </div>
 
-        <!-- Tabela de Registros -->
-        <div class="card">
-          <div class="table-header">
-            <h2>Registros de Ponto</h2>
-            <button id="exportBtn" class="btn btn-secondary">
-              📥 Exportar Excel
+        <!-- Abas de Navegação -->
+        <div class="tabs-container">
+          <div class="tabs-header">
+            <button class="tab-btn active" data-tab="registros">
+              📋 Registros de Ponto
+            </button>
+            <button class="tab-btn" data-tab="pagamentos">
+              💰 Gestão de Pagamentos
+            </button>
+            <button class="tab-btn" data-tab="funcionarios">
+              👥 Funcionários
             </button>
           </div>
-          <div class="table-container">
-            <table id="registrosTable">
-              <thead>
-                <tr>
-                  <th>Funcionário</th>
-                  <th>Data</th>
-                  <th>Entrada</th>
-                  <th>Saída</th>
-                  <th>Total de Horas</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="registrosTableBody">
-                <!-- Será preenchido dinamicamente -->
-              </tbody>
-            </table>
-          </div>
-        </div>
 
-        <!-- Gerenciar Funcionários -->
-        <div class="card">
-          <h2>Gerenciar Funcionários</h2>
-          <button id="addFuncionarioBtn" class="btn btn-primary mb-2">
-            + Adicionar Funcionário
-          </button>
+          <!-- Aba Registros -->
+          <div class="tab-content active" id="tab-registros">
+            <!-- Filtros -->
+            <div class="card filters">
+              <h3>Filtros</h3>
+              <div class="filter-grid">
+                <div class="form-group">
+                  <label for="filterFuncionario">Funcionário:</label>
+                  <select id="filterFuncionario">
+                    <option value="">Todos</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="filterDataInicio">Data Início:</label>
+                  <input type="date" id="filterDataInicio" />
+                </div>
+                <div class="form-group">
+                  <label for="filterDataFim">Data Fim:</label>
+                  <input type="date" id="filterDataFim" />
+                </div>
+                <div class="form-group">
+                  <label for="filterPagamento">Status Pagamento:</label>
+                  <select id="filterPagamento">
+                    <option value="">Todos</option>
+                    <option value="pago">✅ Pagos</option>
+                    <option value="nao_pago">⏳ Pendentes</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <button id="applyFilters" class="btn btn-primary">
+                    Aplicar Filtros
+                  </button>
+                </div>
+              </div>
+            </div>
 
-          <!-- Formulário de Adicionar Funcionário -->
-          <div
-            id="addFuncionarioForm"
-            style="display: none"
-            class="form-container"
-          >
-            <form id="novoFuncionarioForm" class="admin-form">
-              <div class="form-group">
-                <label for="novoNome">Nome:</label>
-                <input
-                  type="text"
-                  id="novoNome"
-                  required
-                  placeholder="Nome completo"
-                />
-              </div>
-              <div class="form-group">
-                <label for="novoPin">PIN (4 dígitos):</label>
-                <input
-                  type="password"
-                  id="novoPin"
-                  maxlength="4"
-                  pattern="[0-9]{4}"
-                  required
-                  placeholder="••••"
-                />
-              </div>
-              <div class="form-actions">
-                <button type="submit" class="btn btn-success">Salvar</button>
-                <button
-                  type="button"
-                  id="cancelAddBtn"
-                  class="btn btn-secondary"
-                >
-                  Cancelar
+            <!-- Tabela de Registros -->
+            <div class="card">
+              <div class="table-header">
+                <h3>Registros de Ponto</h3>
+                <button id="exportBtn" class="btn btn-secondary">
+                  📥 Exportar Excel
                 </button>
               </div>
-            </form>
+              <div class="table-container">
+                <table id="registrosTable">
+                  <thead>
+                    <tr>
+                      <th>Funcionário</th>
+                      <th>Data</th>
+                      <th>Entrada</th>
+                      <th>Saída</th>
+                      <th>Total de Horas</th>
+                      <th>Valor a Receber</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="registrosTableBody">
+                    <!-- Será preenchido dinamicamente -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
-          <div class="table-container">
-            <table id="funcionariosTable">
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>Status</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="funcionariosTableBody">
+          <!-- Aba Pagamentos -->
+          <div class="tab-content" id="tab-pagamentos">
+            <div class="card">
+              <h3>Filtros de Pagamento</h3>
+              <div class="filter-grid">
+                <div class="form-group">
+                  <label for="filterPagamentoFunc">Funcionário:</label>
+                  <select id="filterPagamentoFunc">
+                    <option value="">Todos</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="filterPagamentoPeriodo">Período:</label>
+                  <select id="filterPagamentoPeriodo">
+                    <option value="">Todos os registros</option>
+                    <option value="mes_atual">Mês Atual</option>
+                    <option value="mes_anterior">Mês Anterior</option>
+                    <option value="7dias">Últimos 7 dias</option>
+                    <option value="30dias">Últimos 30 dias</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="filterPagamentoStatus">Status:</label>
+                  <select id="filterPagamentoStatus">
+                    <option value="">Todos</option>
+                    <option value="pendente">⏳ Pendentes</option>
+                    <option value="pago">✅ Pagos</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <button id="applyPagamentoFilters" class="btn btn-primary">
+                    Aplicar Filtros
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div id="pagamentosContainer">
                 <!-- Será preenchido dinamicamente -->
-              </tbody>
-            </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aba Funcionários -->
+          <div class="tab-content" id="tab-funcionarios">
+            <div class="card">
+              <h3>Gerenciar Funcionários</h3>
+              <button id="addFuncionarioBtn" class="btn btn-primary mb-2">
+                + Adicionar Funcionário
+              </button>
+
+              <!-- Formulário de Adicionar Funcionário -->
+              <div
+                id="addFuncionarioForm"
+                style="display: none"
+                class="form-container"
+              >
+                <form id="novoFuncionarioForm" class="admin-form">
+                  <div class="form-group">
+                    <label for="novoNome">Nome:</label>
+                    <input
+                      type="text"
+                      id="novoNome"
+                      required
+                      placeholder="Nome completo"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="novoPin">PIN (4 dígitos):</label>
+                    <input
+                      type="password"
+                      id="novoPin"
+                      maxlength="4"
+                      pattern="[0-9]{4}"
+                      required
+                      placeholder="••••"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="novoValorHora">Valor/Hora (R$):</label>
+                    <input
+                      type="number"
+                      id="novoValorHora"
+                      step="0.01"
+                      min="0"
+                      required
+                      placeholder="15.00"
+                    />
+                  </div>
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-success">
+                      Salvar
+                    </button>
+                    <button
+                      type="button"
+                      id="cancelAddBtn"
+                      class="btn btn-secondary"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Tabela de Funcionários -->
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th>Status</th>
+                      <th>Valor/Hora</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="funcionariosTableBody">
+                    <!-- Será preenchido dinamicamente -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div>

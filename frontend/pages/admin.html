@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Painel administrativo do sistema de ponto"
+    />
+    <title>Área do Admin - Bom de Queijo</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body>
+    <div class="container admin-container">
+      <div class="admin-header">
+        <a href="../../index.html" class="back-btn">← Voltar</a>
+        <h1>⚙️ Painel do Administrador</h1>
+        <button id="logoutBtn" class="btn btn-small btn-secondary">Sair</button>
+      </div>
+
+      <!-- Login do Admin -->
+      <div id="loginSection" class="card">
+        <h2>Login de Administrador</h2>
+        <form id="loginForm" class="admin-form">
+          <div class="form-group">
+            <label for="adminEmail">Email:</label>
+            <input
+              type="email"
+              id="adminEmail"
+              required
+              placeholder="admin@bomdequeijo.com"
+            />
+          </div>
+          <div class="form-group">
+            <label for="adminPassword">Senha:</label>
+            <input
+              type="password"
+              id="adminPassword"
+              required
+              placeholder="••••••••"
+            />
+          </div>
+          <button type="submit" class="btn btn-primary btn-large">
+            Entrar
+          </button>
+        </form>
+        <div id="loginMessage" class="message"></div>
+      </div>
+
+      <!-- Dashboard do Admin -->
+      <div id="dashboardSection" class="dashboard" style="display: none">
+        <!-- Filtros -->
+        <div class="card filters">
+          <h2>Filtros</h2>
+          <div class="filter-grid">
+            <div class="form-group">
+              <label for="filterFuncionario">Funcionário:</label>
+              <select id="filterFuncionario">
+                <option value="">Todos</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="filterDataInicio">Data Início:</label>
+              <input type="date" id="filterDataInicio" />
+            </div>
+            <div class="form-group">
+              <label for="filterDataFim">Data Fim:</label>
+              <input type="date" id="filterDataFim" />
+            </div>
+            <div class="form-group">
+              <button id="applyFilters" class="btn btn-primary">
+                Aplicar Filtros
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumo -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="totalRegistros">0</div>
+            <div class="stat-label">Total de Registros</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="totalHoras">0h</div>
+            <div class="stat-label">Total de Horas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="funcionariosAtivos">0</div>
+            <div class="stat-label">Funcionários Ativos</div>
+          </div>
+        </div>
+
+        <!-- Tabela de Registros -->
+        <div class="card">
+          <div class="table-header">
+            <h2>Registros de Ponto</h2>
+            <button id="exportBtn" class="btn btn-secondary">
+              📥 Exportar Excel
+            </button>
+          </div>
+          <div class="table-container">
+            <table id="registrosTable">
+              <thead>
+                <tr>
+                  <th>Funcionário</th>
+                  <th>Data</th>
+                  <th>Entrada</th>
+                  <th>Saída</th>
+                  <th>Total de Horas</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="registrosTableBody">
+                <!-- Será preenchido dinamicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Gerenciar Funcionários -->
+        <div class="card">
+          <h2>Gerenciar Funcionários</h2>
+          <button id="addFuncionarioBtn" class="btn btn-primary mb-2">
+            + Adicionar Funcionário
+          </button>
+
+          <!-- Formulário de Adicionar Funcionário -->
+          <div
+            id="addFuncionarioForm"
+            style="display: none"
+            class="form-container"
+          >
+            <form id="novoFuncionarioForm" class="admin-form">
+              <div class="form-group">
+                <label for="novoNome">Nome:</label>
+                <input
+                  type="text"
+                  id="novoNome"
+                  required
+                  placeholder="Nome completo"
+                />
+              </div>
+              <div class="form-group">
+                <label for="novoPin">PIN (4 dígitos):</label>
+                <input
+                  type="password"
+                  id="novoPin"
+                  maxlength="4"
+                  pattern="[0-9]{4}"
+                  required
+                  placeholder="••••"
+                />
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-success">Salvar</button>
+                <button
+                  type="button"
+                  id="cancelAddBtn"
+                  class="btn btn-secondary"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="table-container">
+            <table id="funcionariosTable">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="funcionariosTableBody">
+                <!-- Será preenchido dinamicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="../js/admin.js"></script>
+  </body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Registre seu ponto de entrada e saída" />
+    <title>Registrar Ponto - Bom de Queijo</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <div class="header">
+          <a href="../../index.html" class="back-btn">← Voltar</a>
+          <h1>Registrar Ponto</h1>
+        </div>
+
+        <div class="clock-display">
+          <div id="currentTime" class="current-time"></div>
+          <div id="currentDate" class="current-date"></div>
+        </div>
+
+        <form id="pontoForm" class="ponto-form">
+          <div class="form-group">
+            <label for="funcionario">Selecione seu nome:</label>
+            <select id="funcionario" required>
+              <option value="">Escolha seu nome...</option>
+              <!-- Será preenchido dinamicamente pelo JavaScript -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="pin">Digite seu PIN (4 dígitos):</label>
+            <input
+              type="password"
+              id="pin"
+              maxlength="4"
+              pattern="[0-9]{4}"
+              placeholder="••••"
+              required
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="registro-info" id="ultimoRegistro">
+            <!-- Será preenchido dinamicamente -->
+          </div>
+
+          <div class="action-buttons">
+            <button
+              type="submit"
+              data-action="entrada"
+              class="btn btn-success btn-large"
+            >
+              <span class="btn-icon">🟢</span>
+              Registrar Entrada
+            </button>
+
+            <button
+              type="submit"
+              data-action="saida"
+              class="btn btn-danger btn-large"
+            >
+              <span class="btn-icon">🔴</span>
+              Registrar Saída
+            </button>
+          </div>
+        </form>
+
+        <div id="message" class="message"></div>
+      </div>
+    </div>
+
+    <script src="../js/clock.js"></script>
+    <script type="module" src="../js/app.js"></script>
+  </body>
+</html>

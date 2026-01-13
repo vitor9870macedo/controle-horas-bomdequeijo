@@ -64,6 +64,7 @@ controle-horas-bomdequeijo/
 ### Tabelas
 
 **funcionarios**
+
 - `id` (UUID)
 - `nome` (texto)
 - `pin` (4 dígitos)
@@ -72,6 +73,7 @@ controle-horas-bomdequeijo/
 - `ativo` (boolean)
 
 **registros_ponto**
+
 - `id` (UUID)
 - `funcionario_id` (referência)
 - `data` (date)
@@ -96,12 +98,14 @@ controle-horas-bomdequeijo/
 **Tema:** Dark (fundo preto + neon)
 
 **Cores:**
+
 - Preto: `#000000`
 - Cyan: `#00d9ff` (primary)
 - Verde: `#00ff88` (success)
 - Vermelho: `#ff3366` (danger)
 
 **Responsivo:**
+
 - Desktop: 3 colunas
 - Tablet: 2 colunas
 - Mobile: 1 coluna + cards
@@ -111,6 +115,7 @@ controle-horas-bomdequeijo/
 ## ⚙️ FUNCIONALIDADES
 
 ### Funcionário (`/funcionario`)
+
 1. Login com PIN (4 dígitos)
 2. Registrar entrada (botão verde)
 3. Registrar saída (botão vermelho)
@@ -121,18 +126,21 @@ controle-horas-bomdequeijo/
 ### Admin (`/admin`)
 
 **Tab 1: Registros**
+
 - Filtrar por funcionário
 - Filtrar por data
 - Ver todos os registros
 - Editar/deletar registros
 
 **Tab 2: Pagamentos**
+
 - Filtrar pendentes/pagos
 - Marcar como pago
 - Ver totais (horas × valor/hora)
 - Filtrar por período
 
 **Tab 3: Funcionários**
+
 - Criar funcionário
 - Editar funcionário
 - Deletar funcionário
@@ -144,15 +152,18 @@ controle-horas-bomdequeijo/
 ## 🔐 CREDENCIAIS
 
 ### Admin Supabase
+
 - Email: `admin@bomdequeijo.com`
 - Senha: `admin123456`
 
 ### Funcionários de Teste
+
 - **Vitor Teste** - PIN: `1111` - R$ 16/h
 - **Popis** - PIN: `2222` - R$ 18/h
 - **Leandro** - PIN: `3333` - R$ 22/h
 
 ### URLs
+
 - **Frontend:** https://controle-horas-bomdequeijo.vercel.app
 - **Supabase:** https://juquuhckfursjzbesofg.supabase.co
 - **GitHub:** https://github.com/vitor9870macedo/controle-horas-bomdequeijo
@@ -172,12 +183,14 @@ controle-horas-bomdequeijo/
 ## 🛠️ TECNOLOGIAS
 
 **Frontend:**
+
 - HTML5
 - CSS3 (Grid + Flexbox)
 - JavaScript ES6 (módulos)
 - Supabase JS Client (CDN)
 
 **Backend:**
+
 - Supabase
   - PostgreSQL
   - API REST
@@ -185,6 +198,7 @@ controle-horas-bomdequeijo/
   - Row Level Security
 
 **Deploy:**
+
 - Vercel (frontend)
 - GitHub (versionamento)
 
@@ -193,18 +207,22 @@ controle-horas-bomdequeijo/
 ## 📝 PRÓXIMOS PASSOS
 
 1. **Finalizar deploy na Vercel**
+
    - Configurar Output Directory: `frontend`
    - Clicar em Deploy
 
 2. **Executar script de segurança no Supabase**
+
    - SQL Editor → `database/verificar-rls.sql`
 
 3. **Testar em produção**
+
    - Login admin
    - Login funcionário
    - Registrar ponto
 
 4. **Configurar CORS (se necessário)**
+
    - Settings > API > CORS Origins
    - Adicionar domínio Vercel
 
@@ -217,18 +235,22 @@ controle-horas-bomdequeijo/
 ## 🆘 TROUBLESHOOTING
 
 ### Erro: "Failed to fetch"
+
 → CORS não configurado  
 → Adicionar domínio Vercel no Supabase
 
 ### Erro: "404 - Not Found"
+
 → vercel.json com rotas incorretas  
 → Output Directory errado
 
 ### Erro: "Invalid JWT"
+
 → ANON_KEY incorreta  
 → Copiar novamente do Supabase
 
 ### Login não funciona
+
 → Usuário admin não criado no Supabase  
 → Authentication > Users > Add user
 
@@ -257,17 +279,20 @@ controle-horas-bomdequeijo/
 ## 🎓 CONCEITOS-CHAVE
 
 **Row Level Security (RLS):**
+
 - Proteção no nível do banco de dados
 - Cada query é filtrada automaticamente
 - Admin vê tudo, funcionário só vê seus dados
 
 **Supabase = Backend Completo:**
+
 - Banco PostgreSQL
 - API REST gerada automaticamente
 - Autenticação built-in
 - Hospedagem gerenciada
 
 **Vercel = Frontend Estático:**
+
 - Hospeda HTML/CSS/JS
 - CDN global
 - HTTPS automático
@@ -289,6 +314,7 @@ controle-horas-bomdequeijo/
 ## 🔄 HISTÓRICO DE MUDANÇAS
 
 **v1.0.0 - 12/01/2026**
+
 - ✅ Sistema completo de ponto
 - ✅ Dashboard admin com tabs
 - ✅ Sistema de pagamentos
@@ -298,6 +324,7 @@ controle-horas-bomdequeijo/
 - ✅ Documentação completa
 
 **Melhorias anteriores:**
+
 - Adicionado campo `valor_hora`
 - Adicionado tracking de `pago`
 - Tab-based navigation

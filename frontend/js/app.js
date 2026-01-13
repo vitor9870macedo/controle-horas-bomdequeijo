@@ -23,7 +23,7 @@ function getBrasiliaTime() {
 // Carregar funcionários ativos (RLS permite leitura)
 async function loadFuncionarios() {
   try {
-    const { data, error} = await supabase
+    const { data, error } = await supabase
       .from("funcionarios")
       .select("nome")
       .eq("ativo", true)
@@ -36,7 +36,7 @@ async function loadFuncionarios() {
       '<option value="">Escolha seu nome...</option>';
 
     if (data && data.length > 0) {
-      const nomesUnicos = [...new Set(data.map(f => f.nome))];
+      const nomesUnicos = [...new Set(data.map((f) => f.nome))];
       nomesUnicos.forEach((nome) => {
         const option = document.createElement("option");
         option.value = nome;

@@ -20,33 +20,28 @@ function getBrasiliaTime() {
   );
 }
 
-// Carregar funcionários ativos - APENAS NOMES (sem expor PINs)
+// Carregar funcionários ativos usando função segura
 async function loadFuncionarios() {
   try {
-    // Buscar apenas nomes distintos de funcionários ativos
-    const { data, error } = await supabase
-      .from("funcionarios")
-      .select("nome")
-      .eq("ativo", true)
-      .eq("role", "funcionario")
-      .order("nome");
+    // Usar função SQL pública que retorna apenas nomes
+    const { data, error } = await supabase.rpc('listar_nomes_funcionarios');
 
     if (error) throw error;
 
     funcionarioSelect.innerHTML =
       '<option value="">Escolha seu nome...</option>';
 
-    // Remover duplicatas e criar options apenas com nomes
-    const nomesUnicos = [...new Set(data.map((f) => f.nome))];
-    nomesUnicos.forEach((nome) => {
-      const option = document.createElement("option");
-      option.value = nome; // Agora armazena NOME, não ID
-      option.textContent = nome;
-      funcionarioSelect.appendChild(option);
-    });
+    if (data && data.length > 0) {
+      data.forEach((item) => {
+        const option = document.createElement("option");
+        option.value = item.nome;
+        option.textContent = item.nome;
+        funcionarioSelect.appendChild(option);
+      });
+    }
   } catch (error) {
     console.error("Erro ao carregar funcionários:", error);
-    showMessage("Erro ao carregar funcionários", "error");
+    showMessage("Erro ao carregar funcionários. Tente recarregar a página.", "error");
   }
 }
 

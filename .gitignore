@@ -16,6 +16,10 @@ build/
 .vercel
 .output
 
+# Arquivos temporários/geradores
+gerar-icones.html
+gerar-screenshots.html
+
 # OS Files
 .DS_Store
 Thumbs.db

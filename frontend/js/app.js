@@ -20,11 +20,13 @@ function getBrasiliaTime() {
   );
 }
 
-// Carregar funcionários ativos usando função segura
+// Carregar funcionários usando VIEW pública (sem expor PINs)
 async function loadFuncionarios() {
   try {
-    // Usar função SQL pública que retorna apenas nomes
-    const { data, error } = await supabase.rpc('listar_nomes_funcionarios');
+    // Usar VIEW ao invés de tabela direta
+    const { data, error } = await supabase
+      .from('funcionarios_publico')
+      .select('nome');
 
     if (error) throw error;
 
@@ -41,7 +43,7 @@ async function loadFuncionarios() {
     }
   } catch (error) {
     console.error("Erro ao carregar funcionários:", error);
-    showMessage("Erro ao carregar funcionários. Tente recarregar a página.", "error");
+    showMessage("Erro ao carregar lista. Recarregue a página.", "error");
   }
 }
 

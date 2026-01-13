@@ -85,6 +85,7 @@ controle-horas-bomdequeijo/
 1. **Crie conta:** https://supabase.com (grátis)
 2. **Crie novo projeto:** Nome: `Bom de Queijo`
 3. **Execute migrations no SQL Editor:**
+
    - `database/schema.sql` (estrutura completa)
    - `database/verificar-rls.sql` (ativar segurança)
    - `database/dados-simulacao.sql` (dados de teste - opcional)
@@ -99,6 +100,7 @@ controle-horas-bomdequeijo/
 **Opção Rápida:** Siga o guia [DEPLOY-RAPIDO.md](DEPLOY-RAPIDO.md)
 
 **Resumo:**
+
 ```bash
 # 1. Push para GitHub
 git push origin main
@@ -113,11 +115,13 @@ git push origin main
 ### 3️⃣ Teste o Sistema
 
 **Admin:**
+
 - URL: `/admin`
 - Email: `admin@bomdequeijo.com`
 - Senha: `admin123456`
 
 **Funcionário:**
+
 - URL: `/funcionario`
 - PIN: `1111` (Vitor Teste)
 
@@ -128,6 +132,7 @@ git push origin main
 ### Tabelas
 
 **`funcionarios`**
+
 ```sql
 id UUID PRIMARY KEY
 nome TEXT
@@ -139,6 +144,7 @@ created_at TIMESTAMP
 ```
 
 **`registros_ponto`**
+
 ```sql
 id UUID PRIMARY KEY
 funcionario_id UUID → funcionarios(id)
@@ -160,6 +166,7 @@ created_at TIMESTAMP
 ❌ **SERVICE_KEY** - NUNCA expor (acesso total ao banco)
 
 **Verificar segurança:**
+
 ```sql
 -- Execute database/verificar-rls.sql no Supabase
 ```
@@ -169,12 +176,14 @@ created_at TIMESTAMP
 ## 🎨 Design
 
 **Tema Dark:**
+
 - Fundo: `#000000` (preto)
 - Primary: `#00d9ff` (cyan neon)
 - Success: `#00ff88` (verde neon)
 - Danger: `#ff3366` (vermelho neon)
 
 **Responsividade:**
+
 - Desktop: Grid 3 colunas
 - Tablet: Grid 2 colunas (< 768px)
 - Mobile: 1 coluna + cards (< 480px)
@@ -203,6 +212,7 @@ created_at TIMESTAMP
 ## 🔐 Segurança
 
 **Checklist:**
+
 - [x] RLS ativada
 - [x] Policies configuradas
 - [x] CORS configurado
@@ -221,6 +231,7 @@ created_at TIMESTAMP
 **Backend:** Supabase (gerenciado)
 
 **URLs:**
+
 - Frontend: https://controle-horas-bomdequeijo.vercel.app
 - API: https://juquuhckfursjzbesofg.supabase.co
 
@@ -231,16 +242,19 @@ created_at TIMESTAMP
 ## 🛠️ Tecnologias
 
 **Frontend:**
+
 - HTML5 (semântico)
 - CSS3 (Grid, Flexbox, Custom Properties)
 - Vanilla JavaScript (ES6 modules)
 - Supabase JS Client (CDN)
 
 **Backend:**
+
 - Supabase (PostgreSQL + API REST + Auth + RLS)
 - Nenhum servidor Node.js necessário
 
 **Deploy:**
+
 - Vercel (frontend estático)
 - GitHub (controle de versão)
 
@@ -275,7 +289,8 @@ created_at TIMESTAMP
 ---
 
 **Desenvolvido com ❤️ para Bom de Queijo**
-```
+
+````
 
 ### 5️⃣ Deploy (Produção)
 
@@ -290,7 +305,7 @@ vercel
 
 # Opção 3: Netlify
 # Arraste a pasta para https://app.netlify.com/drop
-```
+````
 
 ---
 

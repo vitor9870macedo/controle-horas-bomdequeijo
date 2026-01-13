@@ -20,23 +20,28 @@ function getBrasiliaTime() {
   );
 }
 
-// Carregar funcionários ativos
+// Carregar funcionários ativos - APENAS NOMES (sem expor PINs)
 async function loadFuncionarios() {
   try {
+    // Buscar apenas nomes distintos de funcionários ativos
     const { data, error } = await supabase
       .from("funcionarios")
-      .select("*")
+      .select("nome")
       .eq("ativo", true)
+      .eq("role", "funcionario")
       .order("nome");
 
     if (error) throw error;
 
     funcionarioSelect.innerHTML =
       '<option value="">Escolha seu nome...</option>';
-    data.forEach((func) => {
+
+    // Remover duplicatas e criar options apenas com nomes
+    const nomesUnicos = [...new Set(data.map((f) => f.nome))];
+    nomesUnicos.forEach((nome) => {
       const option = document.createElement("option");
-      option.value = func.id;
-      option.textContent = func.nome;
+      option.value = nome; // Agora armazena NOME, não ID
+      option.textContent = nome;
       funcionarioSelect.appendChild(option);
     });
   } catch (error) {
@@ -45,63 +50,25 @@ async function loadFuncionarios() {
   }
 }
 
-// Verificar último registro do funcionário
-async function checkUltimoRegistro(funcionarioId) {
+// Validar PIN usando função segura do banco
+async function verificarPin(nomeFuncionario, pin) {
   try {
-    const hoje = getBrasiliaTime().toISOString().split("T")[0];
-
-    const { data, error } = await supabase
-      .from("registros_ponto")
-      .select("*, funcionarios(nome)")
-      .eq("funcionario_id", funcionarioId)
-      .eq("data", hoje)
-      .order("created_at", { ascending: false })
-      .limit(1);
+    const { data, error } = await supabase.rpc("validar_pin_funcionario", {
+      nome_input: nomeFuncionario,
+      pin_input: pin,
+    });
 
     if (error) throw error;
 
+    // Se retornar dados, PIN está correto
     if (data && data.length > 0) {
-      const registro = data[0];
-      const entradaFormatada = registro.entrada
-        ? new Date(registro.entrada).toLocaleTimeString("pt-BR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "--:--";
-      const saidaFormatada = registro.saida
-        ? new Date(registro.saida).toLocaleTimeString("pt-BR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "--:--";
-
-      ultimoRegistroDiv.innerHTML = `
-                <strong>📋 Último registro de hoje:</strong><br>
-                Entrada: ${entradaFormatada} | Saída: ${saidaFormatada}
-            `;
-    } else {
-      ultimoRegistroDiv.innerHTML = "<strong>ℹ️ Nenhum registro hoje</strong>";
+      return data[0]; // Retorna { id, nome, valor_hora, ativo }
     }
-  } catch (error) {
-    console.error("Erro ao verificar último registro:", error);
-  }
-}
 
-// Verificar PIN
-async function verificarPin(funcionarioId, pin) {
-  try {
-    const { data, error } = await supabase
-      .from("funcionarios")
-      .select("pin")
-      .eq("id", funcionarioId)
-      .single();
-
-    if (error) throw error;
-
-    return data.pin === pin;
+    return null; // PIN incorreto
   } catch (error) {
     console.error("Erro ao verificar PIN:", error);
-    return false;
+    return null;
   }
 }
 
@@ -217,7 +184,9 @@ function showMessage(text, type) {
 // Event Listeners
 funcionarioSelect.addEventListener("change", async (e) => {
   if (e.target.value) {
-    await checkUltimoRegistro(e.target.value);
+    // Não mostramos registros sem validar PIN (segurança)
+    ultimoRegistroDiv.innerHTML =
+      "<strong>ℹ️ Digite seu PIN para continuar</strong>";
   } else {
     ultimoRegistroDiv.innerHTML = "";
   }
@@ -226,25 +195,25 @@ funcionarioSelect.addEventListener("change", async (e) => {
 pontoForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const funcionarioId = funcionarioSelect.value;
+  const nomeFuncionario = funcionarioSelect.value; // Agora é NOME, não ID
   const pin = pinInput.value;
   const acao = e.submitter.dataset.action;
 
-  if (!funcionarioId || !pin) {
+  if (!nomeFuncionario || !pin) {
     showMessage("❌ Preencha todos os campos!", "error");
     return;
   }
 
-  // Verificar PIN
-  const pinValido = await verificarPin(funcionarioId, pin);
-  if (!pinValido) {
-    showMessage("❌ PIN incorreto!", "error");
+  // Verificar PIN usando função segura
+  const funcionario = await verificarPin(nomeFuncionario, pin);
+  if (!funcionario) {
+    showMessage("❌ Nome ou PIN incorreto!", "error");
     pinInput.value = "";
     return;
   }
 
-  // Registrar ponto
-  await registrarPonto(funcionarioId, acao);
+  // Registrar ponto com o ID retornado pela função segura
+  await registrarPonto(funcionario.id, acao);
 });
 
 // Inicializar

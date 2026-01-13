@@ -781,14 +781,94 @@ tbody tr:hover {
   }
 
   .table-container {
-    font-size: 0.8rem;
-    overflow-x: auto;
+    font-size: 0.85rem;
+    overflow-x: visible; /* Remover scroll horizontal */
   }
 
   th,
   td {
-    padding: 8px 6px;
-    font-size: 0.8rem;
+    padding: 10px 8px;
+    font-size: 0.85rem;
+  }
+
+  /* Tabelas de Registros e Pagamentos em cards no mobile */
+  #tab-registros .table-container table,
+  #tab-pagamentos .table-container table {
+    display: block;
+  }
+
+  #tab-registros thead,
+  #tab-pagamentos thead {
+    display: none;
+  }
+
+  #tab-registros tbody,
+  #tab-pagamentos tbody {
+    display: block;
+  }
+
+  #tab-registros tr,
+  #tab-pagamentos tr {
+    display: block;
+    background: var(--card-hover);
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  #tab-registros td,
+  #tab-pagamentos td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border: none;
+    font-size: 0.9rem;
+  }
+
+  #tab-registros td::before,
+  #tab-pagamentos td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-right: 12px;
+    min-width: 100px;
+  }
+
+  #tab-registros td:first-child,
+  #tab-pagamentos td:first-child {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary);
+    border-bottom: 1px solid var(--border-dark);
+    padding-bottom: 12px;
+    margin-bottom: 8px;
+  }
+
+  #tab-registros td:first-child::before,
+  #tab-pagamentos td:first-child::before {
+    content: "";
+  }
+
+  #tab-registros td:last-child,
+  #tab-pagamentos td:last-child {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-dark);
+    margin-top: 8px;
+  }
+
+  #tab-registros td:last-child::before,
+  #tab-pagamentos td:last-child::before {
+    display: none;
+  }
+
+  #tab-registros td:last-child button,
+  #tab-pagamentos td:last-child button {
+    width: 100%;
   }
 
   /* Tabela de funcionários em formato de cards no mobile */
@@ -921,13 +1001,32 @@ tbody tr:hover {
     font-size: 1.3rem;
   }
 
+  .admin-header h1 {
+    font-size: 1.1rem;
+  }
+
   th,
   td {
-    padding: 6px 4px;
-    font-size: 0.75rem;
+    padding: 8px 6px;
+    font-size: 0.85rem;
+  }
+
+  #tab-registros td::before,
+  #tab-pagamentos td::before,
+  #tab-funcionarios td::before {
+    font-size: 0.8rem;
   }
 
   .btn {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    padding: 10px 16px;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
   }
 }

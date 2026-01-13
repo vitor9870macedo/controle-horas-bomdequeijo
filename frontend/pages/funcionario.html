@@ -80,29 +80,29 @@
       // Relógio em tempo real
       function updateClock() {
         const now = new Date();
-        
-        const timeString = now.toLocaleTimeString('pt-BR', {
-          timeZone: 'America/Sao_Paulo',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
+
+        const timeString = now.toLocaleTimeString("pt-BR", {
+          timeZone: "America/Sao_Paulo",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
         });
-        
-        const dateString = now.toLocaleDateString('pt-BR', {
-          timeZone: 'America/Sao_Paulo',
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
+
+        const dateString = now.toLocaleDateString("pt-BR", {
+          timeZone: "America/Sao_Paulo",
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
         });
-        
-        const timeEl = document.getElementById('currentTime');
-        const dateEl = document.getElementById('currentDate');
-        
+
+        const timeEl = document.getElementById("currentTime");
+        const dateEl = document.getElementById("currentDate");
+
         if (timeEl) timeEl.textContent = timeString;
         if (dateEl) dateEl.textContent = dateString;
       }
-      
+
       updateClock();
       setInterval(updateClock, 1000);
     </script>

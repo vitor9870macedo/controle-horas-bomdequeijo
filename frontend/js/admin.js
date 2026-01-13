@@ -287,13 +287,13 @@ async function loadRegistros(filtros = {}) {
       const btnPagoClass = registro.pago ? "btn-secondary" : "btn-success";
 
       tr.innerHTML = `
-                <td><strong>${registro.funcionarios.nome}</strong></td>
-                <td>${dataFormatada}</td>
-                <td>${entradaFormatada}</td>
-                <td>${saidaFormatada}</td>
-                <td><strong>${totalHoras}</strong></td>
-                <td><strong style="color: var(--success);">${valorReceber}</strong></td>
-                <td><span class="status-badge ${status}">${statusText}</span></td>
+                <td data-label="Funcionário"><strong>${registro.funcionarios.nome}</strong></td>
+                <td data-label="Data">${dataFormatada}</td>
+                <td data-label="Entrada">${entradaFormatada}</td>
+                <td data-label="Saída">${saidaFormatada}</td>
+                <td data-label="Total"><strong>${totalHoras}</strong></td>
+                <td data-label="Valor"><strong style="color: var(--success);">${valorReceber}</strong></td>
+                <td data-label="Status"><span class="status-badge ${status}">${statusText}</span></td>
             `;
       registrosTableBody.appendChild(tr);
     });

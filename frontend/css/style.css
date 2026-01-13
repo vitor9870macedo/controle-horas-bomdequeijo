@@ -451,7 +451,7 @@ body.funcionario-page {
 }
 
 .table-container {
-  overflow-x: auto;
+  overflow-x: visible; /* Sem scroll por padrão */
   margin-top: 12px;
   border-radius: 8px;
   border: 1px solid var(--border-dark);
@@ -709,6 +709,14 @@ tbody tr:hover {
   }
 }
 
+/* ==================== RESPONSIVO DESKTOP ==================== */
+@media (min-width: 769px) {
+  /* Desktop: permitir scroll horizontal se tabela for muito larga */
+  .table-container {
+    overflow-x: auto;
+  }
+}
+
 /* ==================== RESPONSIVO MOBILE ==================== */
 @media (max-width: 768px) {
   body {
@@ -782,7 +790,9 @@ tbody tr:hover {
 
   .table-container {
     font-size: 0.85rem;
-    overflow-x: visible; /* Remover scroll horizontal */
+    overflow-x: visible !important; /* Forçar sem scroll */
+    overflow-y: visible !important;
+    border: none; /* Remover borda que pode causar scroll */
   }
 
   th,
@@ -792,9 +802,16 @@ tbody tr:hover {
   }
 
   /* Tabelas de Registros e Pagamentos em cards no mobile */
+  #tab-registros .table-container,
+  #tab-pagamentos .table-container {
+    overflow: visible !important;
+    width: 100%;
+  }
+
   #tab-registros .table-container table,
   #tab-pagamentos .table-container table {
     display: block;
+    width: 100%;
   }
 
   #tab-registros thead,

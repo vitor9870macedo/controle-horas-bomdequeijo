@@ -20,13 +20,15 @@ function getBrasiliaTime() {
   );
 }
 
-// Carregar funcionários usando VIEW pública (sem expor PINs)
+// Carregar funcionários ativos (RLS permite leitura)
 async function loadFuncionarios() {
   try {
-    // Usar VIEW ao invés de tabela direta
-    const { data, error } = await supabase
-      .from('funcionarios_publico')
-      .select('nome');
+    const { data, error} = await supabase
+      .from("funcionarios")
+      .select("nome")
+      .eq("ativo", true)
+      .eq("role", "funcionario")
+      .order("nome");
 
     if (error) throw error;
 
@@ -34,10 +36,11 @@ async function loadFuncionarios() {
       '<option value="">Escolha seu nome...</option>';
 
     if (data && data.length > 0) {
-      data.forEach((item) => {
+      const nomesUnicos = [...new Set(data.map(f => f.nome))];
+      nomesUnicos.forEach((nome) => {
         const option = document.createElement("option");
-        option.value = item.nome;
-        option.textContent = item.nome;
+        option.value = nome;
+        option.textContent = nome;
         funcionarioSelect.appendChild(option);
       });
     }

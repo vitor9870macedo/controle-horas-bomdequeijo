@@ -78,12 +78,16 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
   const botoes = document.querySelectorAll("button[data-action]");
   botoes.forEach((btn) => (btn.disabled = true));
 
-  const iconeOriginal = botaoClicado.querySelector(".btn-icon").textContent;
-  const textoOriginal = botaoClicado.childNodes[2].textContent.trim();
+  // Guardar estado original do botão
+  const iconeElement = botaoClicado.querySelector(".btn-icon");
+  const iconeOriginal = iconeElement.textContent;
+  const textoOriginal = botaoClicado.lastChild.textContent.trim();
 
-  botaoClicado.querySelector(".btn-icon").textContent = "⏳";
-  botaoClicado.childNodes[2].textContent =
-    acao === "entrada" ? " Registrando entrada..." : " Registrando saída...";
+  // Mostrar loading
+  iconeElement.textContent = "⏳";
+  botaoClicado.lastChild.textContent = acao === "entrada" 
+    ? " Registrando entrada..." 
+    : " Registrando saída...";
 
   try {
     const brasiliaTime = getBrasiliaTime();
@@ -183,8 +187,9 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
     const botoes = document.querySelectorAll("button[data-action]");
     botoes.forEach((btn) => (btn.disabled = false));
 
-    botaoClicado.querySelector(".btn-icon").textContent = iconeOriginal;
-    botaoClicado.childNodes[2].textContent = " " + textoOriginal;
+    const iconeElement = botaoClicado.querySelector(".btn-icon");
+    iconeElement.textContent = iconeOriginal;
+    botaoClicado.lastChild.textContent = " " + textoOriginal;
   }
 }
 

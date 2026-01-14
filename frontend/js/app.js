@@ -79,15 +79,13 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
   botoes.forEach((btn) => (btn.disabled = true));
 
   // Guardar estado original do botão
-  const iconeElement = botaoClicado.querySelector(".btn-icon");
-  const iconeOriginal = iconeElement.textContent;
-  const textoOriginal = botaoClicado.lastChild.textContent.trim();
+  const htmlOriginal = botaoClicado.innerHTML;
 
   // Mostrar loading
-  iconeElement.textContent = "⏳";
-  botaoClicado.lastChild.textContent = acao === "entrada" 
-    ? " Registrando entrada..." 
-    : " Registrando saída...";
+  const textoLoading = acao === "entrada" 
+    ? '<span class="btn-icon">⏳</span> Registrando entrada...' 
+    : '<span class="btn-icon">⏳</span> Registrando saída...';
+  botaoClicado.innerHTML = textoLoading;
 
   try {
     const brasiliaTime = getBrasiliaTime();
@@ -186,10 +184,8 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
     // Reabilitar botões e restaurar estado original
     const botoes = document.querySelectorAll("button[data-action]");
     botoes.forEach((btn) => (btn.disabled = false));
-
-    const iconeElement = botaoClicado.querySelector(".btn-icon");
-    iconeElement.textContent = iconeOriginal;
-    botaoClicado.lastChild.textContent = " " + textoOriginal;
+    
+    botaoClicado.innerHTML = htmlOriginal;
   }
 }
 

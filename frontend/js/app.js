@@ -75,15 +75,16 @@ async function verificarPin(nomeFuncionario, pin) {
 // Registrar ponto
 async function registrarPonto(funcionarioId, acao, botaoClicado) {
   // Desabilitar botões e mostrar loading
-  const botoes = document.querySelectorAll('button[data-action]');
-  botoes.forEach(btn => btn.disabled = true);
-  
-  const iconeOriginal = botaoClicado.querySelector('.btn-icon').textContent;
+  const botoes = document.querySelectorAll("button[data-action]");
+  botoes.forEach((btn) => (btn.disabled = true));
+
+  const iconeOriginal = botaoClicado.querySelector(".btn-icon").textContent;
   const textoOriginal = botaoClicado.childNodes[2].textContent.trim();
-  
-  botaoClicado.querySelector('.btn-icon').textContent = '⏳';
-  botaoClicado.childNodes[2].textContent = acao === 'entrada' ? ' Registrando entrada...' : ' Registrando saída...';
-  
+
+  botaoClicado.querySelector(".btn-icon").textContent = "⏳";
+  botaoClicado.childNodes[2].textContent =
+    acao === "entrada" ? " Registrando entrada..." : " Registrando saída...";
+
   try {
     const brasiliaTime = getBrasiliaTime();
     const hoje = brasiliaTime.toISOString().split("T")[0];
@@ -179,11 +180,11 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
     showMessage("❌ Erro ao registrar ponto. Tente novamente.", "error");
   } finally {
     // Reabilitar botões e restaurar estado original
-    const botoes = document.querySelectorAll('button[data-action]');
-    botoes.forEach(btn => btn.disabled = false);
-    
-    botaoClicado.querySelector('.btn-icon').textContent = iconeOriginal;
-    botaoClicado.childNodes[2].textContent = ' ' + textoOriginal;
+    const botoes = document.querySelectorAll("button[data-action]");
+    botoes.forEach((btn) => (btn.disabled = false));
+
+    botaoClicado.querySelector(".btn-icon").textContent = iconeOriginal;
+    botaoClicado.childNodes[2].textContent = " " + textoOriginal;
   }
 }
 

@@ -7,17 +7,7 @@
       name="description"
       content="Sistema de Controle de Ponto para Funcionários - Pizzaria Bom de Queijo"
     />
-    <meta name="theme-color" content="#4CAF50" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
-    <meta name="apple-mobile-web-app-title" content="Bom de Queijo" />
     <title>Sistema de Ponto - Bom de Queijo</title>
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" type="image/svg+xml" href="/icon-192.svg" />
-    <link rel="apple-touch-icon" href="/icon-192.svg" />
     <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>
@@ -84,16 +74,6 @@
       // Atualizar a cada segundo
       updateClock();
       setInterval(updateClock, 1000);
-
-      // Registrar Service Worker para PWA
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register("/service-worker.js")
-            .then((reg) => console.log("Service Worker registrado:", reg.scope))
-            .catch((err) => console.error("Erro ao registrar SW:", err));
-        });
-      }
     </script>
   </body>
 </html>

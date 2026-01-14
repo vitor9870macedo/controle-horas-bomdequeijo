@@ -73,7 +73,17 @@ async function verificarPin(nomeFuncionario, pin) {
 }
 
 // Registrar ponto
-async function registrarPonto(funcionarioId, acao) {
+async function registrarPonto(funcionarioId, acao, botaoClicado) {
+  // Desabilitar botões e mostrar loading
+  const botoes = document.querySelectorAll('button[data-action]');
+  botoes.forEach(btn => btn.disabled = true);
+  
+  const iconeOriginal = botaoClicado.querySelector('.btn-icon').textContent;
+  const textoOriginal = botaoClicado.childNodes[2].textContent.trim();
+  
+  botaoClicado.querySelector('.btn-icon').textContent = '⏳';
+  botaoClicado.childNodes[2].textContent = acao === 'entrada' ? ' Registrando entrada...' : ' Registrando saída...';
+  
   try {
     const brasiliaTime = getBrasiliaTime();
     const hoje = brasiliaTime.toISOString().split("T")[0];
@@ -167,6 +177,13 @@ async function registrarPonto(funcionarioId, acao) {
   } catch (error) {
     console.error("Erro ao registrar ponto:", error);
     showMessage("❌ Erro ao registrar ponto. Tente novamente.", "error");
+  } finally {
+    // Reabilitar botões e restaurar estado original
+    const botoes = document.querySelectorAll('button[data-action]');
+    botoes.forEach(btn => btn.disabled = false);
+    
+    botaoClicado.querySelector('.btn-icon').textContent = iconeOriginal;
+    botaoClicado.childNodes[2].textContent = ' ' + textoOriginal;
   }
 }
 
@@ -198,6 +215,7 @@ pontoForm.addEventListener("submit", async (e) => {
   const nomeFuncionario = funcionarioSelect.value; // Agora é NOME, não ID
   const pin = pinInput.value;
   const acao = e.submitter.dataset.action;
+  const botaoClicado = e.submitter;
 
   if (!nomeFuncionario || !pin) {
     showMessage("❌ Preencha todos os campos!", "error");
@@ -213,7 +231,7 @@ pontoForm.addEventListener("submit", async (e) => {
   }
 
   // Registrar ponto com o ID retornado pela função segura
-  await registrarPonto(funcionario.id, acao);
+  await registrarPonto(funcionario.id, acao, botaoClicado);
 });
 
 // Inicializar

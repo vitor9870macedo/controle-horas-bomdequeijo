@@ -257,6 +257,17 @@ body.funcionario-page {
   transform: translateY(-2px);
 }
 
+.btn-warning {
+  background: var(--warning);
+  color: var(--bg-dark);
+  font-weight: 600;
+}
+
+.btn-warning:hover {
+  background: #ff9900;
+  transform: translateY(-2px);
+}
+
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;

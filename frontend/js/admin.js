@@ -303,17 +303,17 @@ async function loadRegistros(filtros = {}) {
       tr.innerHTML = `
                 <td data-label="Funcionário"><strong>${registro.funcionarios.nome}</strong></td>
                 <td data-label="Data">${dataFormatada} ${editadoIndicador}</td>
-                <td data-label="Entrada">
-                  <span class="horario-editavel" data-registro-id="${registro.id}" data-campo="entrada">${entradaFormatada}</span>
-                </td>
-                <td data-label="Saída">
-                  <span class="horario-editavel" data-registro-id="${registro.id}" data-campo="saida">${saidaFormatada}</span>
-                </td>
+                <td data-label="Entrada">${entradaFormatada}</td>
+                <td data-label="Saída">${saidaFormatada}</td>
                 <td data-label="Total"><strong>${totalHoras}</strong></td>
                 <td data-label="Valor"><strong style="color: var(--success);">${valorReceber}</strong></td>
-                <td data-label="Status">
-                  <span class="status-badge ${status}">${statusText}</span>
-                  <button class="btn-icon-small" data-registro-id="${registro.id}" data-funcionario-nome="${registro.funcionarios.nome}" title="Ver histórico">📋</button>
+                <td data-label="Status"><span class="status-badge ${status}">${statusText}</span></td>
+                <td data-label="Ações">
+                  <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                    <button class="btn btn-small btn-warning btn-editar-entrada" title="Editar entrada">✏️ Entrada</button>
+                    <button class="btn btn-small btn-warning btn-editar-saida" title="Editar saída">✏️ Saída</button>
+                    <button class="btn btn-small btn-secondary btn-historico" title="Ver histórico">📋 Histórico</button>
+                  </div>
                 </td>
             `;
 
@@ -323,31 +323,38 @@ async function loadRegistros(filtros = {}) {
       registrosTableBody.appendChild(tr);
     });
 
-    // Adicionar event listeners para edição
-    document.querySelectorAll(".horario-editavel").forEach((el) => {
-      el.style.cursor = "pointer";
-      el.style.textDecoration = "underline dotted";
-      el.title = "Clique para editar";
-
-      el.onclick = function () {
-        const registroId = this.dataset.registroId;
-        const campo = this.dataset.campo;
+    // Adicionar event listeners para edição de entrada
+    document.querySelectorAll(".btn-editar-entrada").forEach((btn) => {
+      btn.onclick = function () {
         const tr = this.closest("tr");
         const registro = JSON.parse(tr.dataset.registro);
 
-        mostrarModalEdicao(registro, campo, currentUser.nome, () => {
-          loadRegistros(); // Recarregar após editar
+        mostrarModalEdicao(registro, "entrada", currentUser.nome, () => {
+          loadRegistros();
+          updateStats();
+        });
+      };
+    });
+
+    // Adicionar event listeners para edição de saída
+    document.querySelectorAll(".btn-editar-saida").forEach((btn) => {
+      btn.onclick = function () {
+        const tr = this.closest("tr");
+        const registro = JSON.parse(tr.dataset.registro);
+
+        mostrarModalEdicao(registro, "saida", currentUser.nome, () => {
+          loadRegistros();
           updateStats();
         });
       };
     });
 
     // Adicionar event listeners para histórico
-    document.querySelectorAll(".btn-icon-small").forEach((btn) => {
+    document.querySelectorAll(".btn-historico").forEach((btn) => {
       btn.onclick = function () {
-        const registroId = this.dataset.registroId;
-        const funcionarioNome = this.dataset.funcionarioNome;
-        mostrarHistorico(registroId, funcionarioNome);
+        const tr = this.closest("tr");
+        const registro = JSON.parse(tr.dataset.registro);
+        mostrarHistorico(registro.id, registro.funcionarios.nome);
       };
     });
   } catch (error) {

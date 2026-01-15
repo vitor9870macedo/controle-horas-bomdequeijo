@@ -661,6 +661,8 @@ async function loadRegistros(filtros = {}) {
                 </td>
             `;
 
+      console.log("✅ Botões criados para registro:", registro.id);
+
       // Armazenar dados completos do registro no elemento
       tr.dataset.registro = JSON.stringify(registro);
 

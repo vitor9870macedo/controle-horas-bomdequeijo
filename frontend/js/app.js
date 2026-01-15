@@ -82,9 +82,10 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
   const htmlOriginal = botaoClicado.innerHTML;
 
   // Mostrar loading
-  const textoLoading = acao === "entrada" 
-    ? '<span class="btn-icon">⏳</span> Registrando entrada...' 
-    : '<span class="btn-icon">⏳</span> Registrando saída...';
+  const textoLoading =
+    acao === "entrada"
+      ? '<span class="btn-icon">⏳</span> Registrando entrada...'
+      : '<span class="btn-icon">⏳</span> Registrando saída...';
   botaoClicado.innerHTML = textoLoading;
 
   try {
@@ -92,27 +93,22 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
     const hoje = brasiliaTime.toISOString().split("T")[0];
     const agora = brasiliaTime.toISOString();
 
-    // Buscar registro de hoje
-    const { data: registroExistente, error: searchError } = await supabase
-      .from("registros_ponto")
-      .select("*")
-      .eq("funcionario_id", funcionarioId)
-      .eq("data", hoje)
-      .order("created_at", { ascending: false })
-      .limit(1);
-
-    if (searchError) throw searchError;
-
     if (acao === "entrada") {
+      // Buscar último registro sem saída (qualquer data) - para evitar duplicatas
+      const { data: registroAberto, error: searchError } = await supabase
+        .from("registros_ponto")
+        .select("*")
+        .eq("funcionario_id", funcionarioId)
+        .is("saida", null)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (searchError) throw searchError;
+
       // Verificar se já tem entrada sem saída
-      if (
-        registroExistente &&
-        registroExistente.length > 0 &&
-        registroExistente[0].entrada &&
-        !registroExistente[0].saida
-      ) {
+      if (registroAberto && registroAberto.length > 0) {
         showMessage(
-          "❌ Você já registrou entrada hoje. Registre a saída primeiro!",
+          "❌ Você já tem um registro de entrada aberto. Registre a saída primeiro!",
           "error"
         );
         return;
@@ -134,18 +130,24 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
       if (insertError) throw insertError;
       showMessage("✅ Entrada registrada com sucesso!", "success");
     } else if (acao === "saida") {
+      // Buscar último registro sem saída (independente da data) - permite turno noturno
+      const { data: registroAberto, error: searchError } = await supabase
+        .from("registros_ponto")
+        .select("*")
+        .eq("funcionario_id", funcionarioId)
+        .is("saida", null)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (searchError) throw searchError;
+
       // Verificar se tem entrada sem saída
-      if (
-        !registroExistente ||
-        registroExistente.length === 0 ||
-        !registroExistente[0].entrada ||
-        registroExistente[0].saida
-      ) {
+      if (!registroAberto || registroAberto.length === 0) {
         showMessage("❌ Você precisa registrar a entrada primeiro!", "error");
         return;
       }
 
-      const registro = registroExistente[0];
+      const registro = registroAberto[0];
       const entrada = new Date(registro.entrada);
       const saida = new Date(agora);
 
@@ -184,7 +186,7 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
     // Reabilitar botões e restaurar estado original
     const botoes = document.querySelectorAll("button[data-action]");
     botoes.forEach((btn) => (btn.disabled = false));
-    
+
     botaoClicado.innerHTML = htmlOriginal;
   }
 }

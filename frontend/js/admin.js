@@ -136,8 +136,18 @@ async function editarHorario(params) {
         valorNovo: novoValor,
         motivo,
       });
+      console.log("✅ Auditoria registrada com sucesso");
     } catch (auditoriaError) {
-      console.warn("⚠️ Alteração salva, mas auditoria falhou:", auditoriaError);
+      console.error(
+        "⚠️ Alteração salva, mas auditoria falhou:",
+        auditoriaError
+      );
+      console.error("Detalhes do erro:", {
+        message: auditoriaError.message,
+        code: auditoriaError.code,
+        details: auditoriaError.details,
+        hint: auditoriaError.hint,
+      });
       // Não lança erro - a edição foi salva com sucesso
     }
 

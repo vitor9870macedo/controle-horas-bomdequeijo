@@ -1,7 +1,7 @@
 # 📋 RESUMO DO PROJETO - BOM DE QUEIJO
 
-**Data:** 12/01/2026  
-**Status:** ✅ PRONTO PARA PRODUÇÃO  
+**Data:** 15/01/2026  
+**Status:** ✅ PRONTO PARA PRODUÇÃO (Com Auditoria e Offline-First)  
 **Deploy:** https://controle-horas-bomdequeijo.vercel.app
 
 ---
@@ -9,6 +9,11 @@
 ## 🎯 O QUE É
 
 Sistema web de controle de ponto e pagamentos para funcionários freelancers da pizzaria "Bom de Queijo".
+
+### 🆕 Novos Pilares (Janeiro/2026)
+
+✅ **CONFIABILIDADE:** Sistema offline-first com sincronização automática  
+✅ **AUDITORIA:** Rastreamento completo de edições manuais pelo admin
 
 ---
 
@@ -48,7 +53,8 @@ controle-horas-bomdequeijo/
 │   ├── verificar-rls.sql       → Script de segurança
 │   ├── dados-simulacao.sql     → Dados de teste
 │   ├── add-valor-hora.sql      → Migration: adicionar campo
-│   └── add-campo-pago.sql      → Migration: tracking pagamento
+│   ├── add-campo-pago.sql      → Migration: tracking pagamento
+│   └── instalar-auditoria.sql  → Sistema de auditoria completo
 │
 ├── index.html                  → Página inicial
 ├── vercel.json                 → Config Vercel
@@ -82,6 +88,23 @@ controle-horas-bomdequeijo/
 - `total_horas` (decimal - calculado por trigger)
 - `pago` (boolean - foi pago?)
 - `data_pagamento` (timestamp)
+- `editado` (boolean - registro foi alterado?)
+- `editado_em` (timestamp - quando foi editado)
+- `editado_por` (texto - quem editou)
+
+**historico_alteracoes** 🆕
+
+- `id` (UUID)
+- `nome_da_tabela` (texto - qual tabela foi alterada)
+- `registro_id` (UUID - ID do registro alterado)
+- `funcionario_id` (referência)
+- `admin_nome` (texto - nome do admin)
+- `da_operacao` (texto - INSERT/UPDATE/DELETE)
+- `campo_alterado` (texto - qual campo mudou)
+- `valor_anterior` (texto - valor antigo)
+- `valor_novo` (texto - valor novo)
+- `motivo` (texto - justificativa obrigatória)
+- `timestamp_criado` (timestamp)
 
 ### Segurança (RLS)
 

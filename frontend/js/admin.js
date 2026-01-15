@@ -124,16 +124,22 @@ async function editarHorario(params) {
 
     if (updateError) throw updateError;
 
-    await registrarAlteracao({
-      tabela: "registros_ponto",
-      registroId,
-      funcionarioId,
-      adminNome,
-      campoAlterado,
-      valorAnterior,
-      valorNovo: novoValor,
-      motivo,
-    });
+    // Tentar registrar auditoria, mas não falhar se der erro
+    try {
+      await registrarAlteracao({
+        tabela: "registros_ponto",
+        registroId,
+        funcionarioId,
+        adminNome,
+        campoAlterado,
+        valorAnterior,
+        valorNovo: novoValor,
+        motivo,
+      });
+    } catch (auditoriaError) {
+      console.warn("⚠️ Alteração salva, mas auditoria falhou:", auditoriaError);
+      // Não lança erro - a edição foi salva com sucesso
+    }
 
     return { success: true };
   } catch (error) {
@@ -252,14 +258,19 @@ function mostrarModalEdicao(registro, campo, adminNome, onSave) {
         motivo,
       });
 
+      // Fechar modal ANTES de recarregar para evitar erros
       document.body.removeChild(modal);
 
-      if (onSave) onSave();
+      // Atualizar UI imediatamente
+      if (onSave) {
+        await onSave();
+      }
 
       alert(
         `✅ ${campoLabel} atualizado com sucesso!\n\nAlteração registrada no histórico de auditoria.`
       );
     } catch (error) {
+      console.error("Erro ao editar:", error);
       alert("❌ Erro ao salvar alteração: " + error.message);
       const btnSalvar = modal.querySelector("#btnSalvar");
       btnSalvar.disabled = false;

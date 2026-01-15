@@ -14,7 +14,10 @@ Sistema web para controle de ponto e pagamentos de funcionários freelancers.
 ✅ **Dashboard Admin** - Visualizar e gerenciar todos os registros  
 ✅ **Login PIN** - 4 dígitos para funcionários, autenticação Supabase para admin  
 ✅ **Tema Dark** - Fundo preto + cores neon (#00d9ff, #00ff88, #ff3366)  
-✅ **100% Responsivo** - Mobile-first design
+✅ **100% Responsivo** - Mobile-first design  
+🆕 **Modo Offline** - Registros salvos localmente e sincronizados automaticamente  
+🆕 **Sistema de Auditoria** - Histórico completo de edições manuais com justificativa  
+🆕 **Edição de Horários** - Admin pode corrigir entrada/saída com rastreamento
 
 ---
 
@@ -65,7 +68,8 @@ controle-horas-bomdequeijo/
 │   ├── verificar-rls.sql        # Script de segurança (RLS)
 │   ├── dados-simulacao.sql      # Dados de teste (3 funcionários)
 │   ├── add-valor-hora.sql       # Migration: campo valor_hora
-│   └── add-campo-pago.sql       # Migration: tracking pagamentos
+│   ├── add-campo-pago.sql       # Migration: tracking pagamentos
+│   └── instalar-auditoria.sql   # Sistema de auditoria e confiabilidade
 │
 ├── index.html                   # Página inicial
 ├── vercel.json                  # Config Vercel (rotas + headers)

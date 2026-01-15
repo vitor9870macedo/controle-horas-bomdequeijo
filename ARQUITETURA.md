@@ -84,8 +84,9 @@ CREATE TABLE registros_ponto (
   entrada TIMESTAMPTZ,
   saida TIMESTAMPTZ,
   total_horas NUMERIC(10,2),       -- Calculado automaticamente
-  pago BOOLEAN DEFAULT false,       -- Controle de pagamento
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  pago BOOLEAN DEFAULT false,       -- Controle de pagamento  editado BOOLEAN DEFAULT false,    -- 🆕 Indica se foi editado manualmente
+  editado_em TIMESTAMPTZ,           -- 🆕 Quando foi editado
+  editado_por TEXT,                 -- 🆕 Quem editou  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
@@ -143,6 +144,77 @@ $$ LANGUAGE plpgsql;
 ```
 
 **Propósito:** Expor apenas nomes para dropdown, sem IDs ou PINs.
+
+#### 🆕 `registrar_alteracao_admin()` (Sistema de Auditoria)
+
+```sql
+CREATE FUNCTION registrar_alteracao_admin(
+    p_tabela TEXT,
+    p_registro_id UUID,
+    p_funcionario_id UUID,
+    p_admin_nome TEXT,
+    p_campo_alterado TEXT,
+    p_valor_anterior TEXT,
+    p_valor_novo TEXT,
+    p_motivo TEXT DEFAULT NULL
+)
+RETURNS UUID
+SECURITY DEFINER
+```
+
+**Propósito:** Registrar todas as edições manuais feitas pelo admin com justificativa obrigatória.
+
+#### 🆕 `obter_historico_registro(p_tabela TEXT, p_registro_id UUID)`
+
+```sql
+RETURNS TABLE (
+    id UUID,
+    admin_nome TEXT,
+    da_operacao TEXT,
+    campo_alterado TEXT,
+    valor_anterior TEXT,
+    valor_novo TEXT,
+    motivo TEXT,
+    timestamp_criado TIMESTAMP WITH TIME ZONE
+)
+SECURITY DEFINER
+```
+
+**Propósito:** Recuperar histórico completo de alterações de um registro específico.
+
+---
+
+### **Tabela: `historico_alteracoes`** 🆕
+
+```sql
+CREATE TABLE historico_alteracoes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nome_da_tabela TEXT NOT NULL,
+    registro_id UUID NOT NULL,
+    funcionario_id UUID REFERENCES funcionarios(id),
+    admin_nome TEXT,
+    da_operacao TEXT NOT NULL,
+    campo_alterado TEXT,
+    valor_anterior TEXT,
+    valor_novo TEXT,
+    motivo TEXT,
+    endereco_ip TEXT,
+    user_agent TEXT,
+    timestamp_criado TIMESTAMP WITH TIME ZONE DEFAULT timezone('America/Sao_Paulo'::text, now())
+);
+```
+
+**Índices:**
+
+- `idx_historico_registro` em `registro_id`
+- `idx_historico_funcionario` em `funcionario_id`
+- `idx_historico_tabela` em `nome_da_tabela`
+- `idx_historico_data` em `timestamp_criado`
+
+**RLS:** Habilitado com políticas:
+
+- SELECT: Permitido para todos
+- INSERT: Permitido (via SECURITY DEFINER)
 
 ---
 

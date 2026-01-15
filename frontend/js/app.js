@@ -75,7 +75,7 @@ async function verificarPin(nomeFuncionario, pin) {
 // Registrar ponto
 async function registrarPonto(funcionarioId, acao, botaoClicado) {
   console.log("🔵 registrarPonto chamado:", { funcionarioId, acao });
-  
+
   // Desabilitar botões e mostrar loading
   const botoes = document.querySelectorAll("button[data-action]");
   botoes.forEach((btn) => (btn.disabled = true));
@@ -160,9 +160,18 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
       const entrada = new Date(registro.entrada);
       const saida = new Date(agora);
 
-      // Calcular horas trabalhadas
+      // Calcular horas trabalhadas (funciona mesmo atravessando meia-noite)
       const diffMs = saida - entrada;
       const diffHours = diffMs / (1000 * 60 * 60);
+
+      // Validar se o tempo é positivo (saída depois da entrada)
+      if (diffHours < 0) {
+        showMessage(
+          "❌ Erro: horário de saída anterior à entrada. Contate o administrador.",
+          "error"
+        );
+        return;
+      }
 
       // Atualizar registro com saída
       const { error: updateError } = await supabase
@@ -177,8 +186,19 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
 
       const horasFormatadas = Math.floor(diffHours);
       const minutosFormatados = Math.round((diffHours - horasFormatadas) * 60);
+
+      // Verificar se trabalhou em turno noturno (passou da meia-noite)
+      const dataEntrada = new Date(registro.entrada).toLocaleDateString(
+        "pt-BR"
+      );
+      const dataSaida = saida.toLocaleDateString("pt-BR");
+      const mensagemTurno =
+        dataEntrada !== dataSaida
+          ? ` (turno noturno: ${dataEntrada} → ${dataSaida})`
+          : "";
+
       showMessage(
-        `✅ Saída registrada! Você trabalhou ${horasFormatadas}h ${minutosFormatados}min hoje.`,
+        `✅ Saída registrada! Você trabalhou ${horasFormatadas}h ${minutosFormatados}min${mensagemTurno}.`,
         "success"
       );
     }
@@ -200,6 +220,77 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
   }
 }
 
+// Verificar e mostrar último registro do funcionário
+async function checkUltimoRegistro(funcionarioId) {
+  try {
+    const { data, error } = await supabase
+      .from("registros_ponto")
+      .select("*")
+      .eq("funcionario_id", funcionarioId)
+      .order("entrada", { ascending: false })
+      .limit(1);
+
+    if (error) throw error;
+
+    if (data && data.length > 0) {
+      const registro = data[0];
+      const entrada = new Date(registro.entrada);
+      const entradaFormatada = entrada.toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      if (!registro.saida) {
+        // Registro em aberto - calcular tempo decorrido
+        const agora = getBrasiliaTime();
+        const diffMs = agora - entrada;
+        const diffHours = diffMs / (1000 * 60 * 60);
+        const horas = Math.floor(diffHours);
+        const minutos = Math.round((diffHours - horas) * 60);
+
+        ultimoRegistroDiv.innerHTML = `
+          <div style="background: var(--warning); color: var(--bg-dark); padding: 12px; border-radius: 8px; margin-top: 10px;">
+            <strong>⚠️ VOCÊ TEM UM PONTO EM ABERTO</strong><br>
+            <small>Entrada: ${entradaFormatada}</small><br>
+            <small>Tempo decorrido: ${horas}h ${minutos}min</small><br>
+            <small style="opacity: 0.8;">👉 Registre sua saída quando terminar</small>
+          </div>
+        `;
+      } else {
+        // Último registro completo
+        const saida = new Date(registro.saida);
+        const saidaFormatada = saida.toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        const totalHoras = parseFloat(registro.total_horas || 0);
+        const horas = Math.floor(totalHoras);
+        const minutos = Math.round((totalHoras - horas) * 60);
+
+        ultimoRegistroDiv.innerHTML = `
+          <div style="background: var(--card); padding: 10px; border-radius: 8px; margin-top: 10px; border-left: 3px solid var(--success);">
+            <strong>✅ Último registro completo</strong><br>
+            <small>Entrada: ${entradaFormatada}</small><br>
+            <small>Saída: ${saidaFormatada}</small><br>
+            <small>Total: ${horas}h ${minutos}min</small>
+          </div>
+        `;
+      }
+    } else {
+      ultimoRegistroDiv.innerHTML = `
+        <div style="padding: 10px; margin-top: 10px; text-align: center; opacity: 0.7;">
+          <small>Nenhum registro encontrado</small>
+        </div>
+      `;
+    }
+  } catch (error) {
+    console.error("Erro ao verificar último registro:", error);
+  }
+}
+
 // Mostrar mensagem
 function showMessage(text, type) {
   messageDiv.textContent = text;
@@ -216,7 +307,7 @@ funcionarioSelect.addEventListener("change", async (e) => {
   if (e.target.value) {
     // Não mostramos registros sem validar PIN (segurança)
     ultimoRegistroDiv.innerHTML =
-      "<strong>ℹ️ Digite seu PIN para continuar</strong>";
+      "<div style='padding: 10px; text-align: center; opacity: 0.8;'><strong>ℹ️ Digite seu PIN para continuar</strong></div>";
   } else {
     ultimoRegistroDiv.innerHTML = "";
   }
@@ -241,13 +332,19 @@ pontoForm.addEventListener("submit", async (e) => {
   console.log("🔐 Verificando PIN...");
   // Verificar PIN usando função segura
   const funcionario = await verificarPin(nomeFuncionario, pin);
-  console.log("🔐 Resultado verificação:", funcionario ? "✅ OK" : "❌ Inválido");
-  
+  console.log(
+    "🔐 Resultado verificação:",
+    funcionario ? "✅ OK" : "❌ Inválido"
+  );
+
   if (!funcionario) {
     showMessage("❌ Nome ou PIN incorreto!", "error");
     pinInput.value = "";
     return;
   }
+
+  // Mostrar último registro antes de registrar (para que o usuário veja se tem ponto aberto)
+  await checkUltimoRegistro(funcionario.id);
 
   // Registrar ponto com o ID retornado pela função segura
   await registrarPonto(funcionario.id, acao, botaoClicado);

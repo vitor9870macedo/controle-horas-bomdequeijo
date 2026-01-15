@@ -1,9 +1,14 @@
 /**
  * Admin.js - Painel Administrativo
  * Gerencia login, visualização de registros, relatórios e funcionários
+ *
+ * PILARES:
+ * 1. CONFIABILIDADE: Sistema resiliente a falhas
+ * 2. AUDITORIA: Log completo de todas as alterações
  */
 
 import { supabase } from "./config.js";
+import { mostrarModalEdicao, mostrarHistorico } from "./auditoria.js";
 
 // Elementos do DOM
 const loginSection = document.getElementById("loginSection");
@@ -286,16 +291,64 @@ async function loadRegistros(filtros = {}) {
         : "✅ Marcar como Pago";
       const btnPagoClass = registro.pago ? "btn-secondary" : "btn-success";
 
+      // Indicador de edição
+      const editadoIndicador = registro.editado
+        ? `<span style="color: var(--warning); font-size: 0.85em;" title="Editado por ${
+            registro.editado_por
+          } em ${new Date(registro.editado_em).toLocaleString(
+            "pt-BR"
+          )}">✏️</span>`
+        : "";
+
       tr.innerHTML = `
                 <td data-label="Funcionário"><strong>${registro.funcionarios.nome}</strong></td>
-                <td data-label="Data">${dataFormatada}</td>
-                <td data-label="Entrada">${entradaFormatada}</td>
-                <td data-label="Saída">${saidaFormatada}</td>
+                <td data-label="Data">${dataFormatada} ${editadoIndicador}</td>
+                <td data-label="Entrada">
+                  <span class="horario-editavel" data-registro-id="${registro.id}" data-campo="entrada">${entradaFormatada}</span>
+                </td>
+                <td data-label="Saída">
+                  <span class="horario-editavel" data-registro-id="${registro.id}" data-campo="saida">${saidaFormatada}</span>
+                </td>
                 <td data-label="Total"><strong>${totalHoras}</strong></td>
                 <td data-label="Valor"><strong style="color: var(--success);">${valorReceber}</strong></td>
-                <td data-label="Status"><span class="status-badge ${status}">${statusText}</span></td>
+                <td data-label="Status">
+                  <span class="status-badge ${status}">${statusText}</span>
+                  <button class="btn-icon-small" data-registro-id="${registro.id}" data-funcionario-nome="${registro.funcionarios.nome}" title="Ver histórico">📋</button>
+                </td>
             `;
+
+      // Armazenar dados completos do registro no elemento
+      tr.dataset.registro = JSON.stringify(registro);
+
       registrosTableBody.appendChild(tr);
+    });
+
+    // Adicionar event listeners para edição
+    document.querySelectorAll(".horario-editavel").forEach((el) => {
+      el.style.cursor = "pointer";
+      el.style.textDecoration = "underline dotted";
+      el.title = "Clique para editar";
+
+      el.onclick = function () {
+        const registroId = this.dataset.registroId;
+        const campo = this.dataset.campo;
+        const tr = this.closest("tr");
+        const registro = JSON.parse(tr.dataset.registro);
+
+        mostrarModalEdicao(registro, campo, currentUser.nome, () => {
+          loadRegistros(); // Recarregar após editar
+          updateStats();
+        });
+      };
+    });
+
+    // Adicionar event listeners para histórico
+    document.querySelectorAll(".btn-icon-small").forEach((btn) => {
+      btn.onclick = function () {
+        const registroId = this.dataset.registroId;
+        const funcionarioNome = this.dataset.funcionarioNome;
+        mostrarHistorico(registroId, funcionarioNome);
+      };
     });
   } catch (error) {
     console.error("Erro ao carregar registros:", error);

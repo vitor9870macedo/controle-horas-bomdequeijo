@@ -1,6 +1,10 @@
 /**
  * App.js - Lógica do Registro de Ponto para Funcionários
  * Gerencia entrada/saída e validação de PIN
+ *
+ * PILARES:
+ * 1. CONFIABILIDADE: Salvamento offline + retry automático
+ * 2. AUDITORIA: Log de todas as alterações
  */
 
 import { supabase } from "./config.js";
@@ -11,6 +15,122 @@ const pinInput = document.getElementById("pin");
 const pontoForm = document.getElementById("pontoForm");
 const messageDiv = document.getElementById("message");
 const ultimoRegistroDiv = document.getElementById("ultimoRegistro");
+
+// ============================================
+// CONFIABILIDADE: Sistema Offline-First
+// ============================================
+
+// Chave para armazenamento local
+const STORAGE_KEY = "registros_pendentes_bom_de_queijo";
+
+// Salvar registro offline
+function salvarRegistroOffline(registro) {
+  try {
+    const pendentes = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    pendentes.push({
+      ...registro,
+      timestamp: new Date().toISOString(),
+      tentativas: 0,
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(pendentes));
+    console.log("💾 Registro salvo offline:", registro);
+    return true;
+  } catch (error) {
+    console.error("❌ Erro ao salvar offline:", error);
+    return false;
+  }
+}
+
+// Obter registros pendentes
+function obterRegistrosPendentes() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+// Remover registro processado
+function removerRegistroPendente(index) {
+  try {
+    const pendentes = obterRegistrosPendentes();
+    pendentes.splice(index, 1);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(pendentes));
+  } catch (error) {
+    console.error("❌ Erro ao remover pendente:", error);
+  }
+}
+
+// Sincronizar registros pendentes
+async function sincronizarPendentes() {
+  const pendentes = obterRegistrosPendentes();
+
+  if (pendentes.length === 0) return;
+
+  console.log(
+    `🔄 Sincronizando ${pendentes.length} registro(s) pendente(s)...`
+  );
+
+  for (let i = pendentes.length - 1; i >= 0; i--) {
+    const registro = pendentes[i];
+
+    // Limite de tentativas
+    if (registro.tentativas >= 5) {
+      console.warn("⚠️ Registro atingiu limite de tentativas:", registro);
+      continue;
+    }
+
+    try {
+      // Tentar enviar ao Supabase
+      if (registro.tipo === "entrada") {
+        const { error } = await supabase.from("registros_ponto").insert([
+          {
+            funcionario_id: registro.funcionario_id,
+            data: registro.data,
+            entrada: registro.entrada,
+            saida: null,
+            total_horas: null,
+          },
+        ]);
+
+        if (error) throw error;
+      } else if (registro.tipo === "saida") {
+        const { error } = await supabase
+          .from("registros_ponto")
+          .update({
+            saida: registro.saida,
+            total_horas: registro.total_horas,
+          })
+          .eq("id", registro.registro_id);
+
+        if (error) throw error;
+      }
+
+      // Sucesso: remover da fila
+      removerRegistroPendente(i);
+      console.log("✅ Registro sincronizado:", registro);
+    } catch (error) {
+      // Falha: incrementar tentativas
+      pendentes[i].tentativas++;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(pendentes));
+      console.error("❌ Erro ao sincronizar registro:", error);
+    }
+  }
+}
+
+// Verificar conexão e sincronizar
+window.addEventListener("online", () => {
+  console.log("🌐 Conexão restaurada!");
+  showMessage("🌐 Conectado! Sincronizando registros...", "success");
+  sincronizarPendentes();
+});
+
+// Sincronizar ao carregar página
+document.addEventListener("DOMContentLoaded", () => {
+  if (navigator.onLine) {
+    sincronizarPendentes();
+  }
+});
 
 // Função para obter horário de Brasília
 function getBrasiliaTime() {
@@ -72,7 +192,7 @@ async function verificarPin(nomeFuncionario, pin) {
   }
 }
 
-// Registrar ponto
+// Registrar ponto com sistema offline-first
 async function registrarPonto(funcionarioId, acao, botaoClicado) {
   console.log("🔵 registrarPonto chamado:", { funcionarioId, acao });
 
@@ -105,7 +225,23 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
         .order("created_at", { ascending: false })
         .limit(1);
 
-      if (searchError) throw searchError;
+      if (searchError) {
+        // Se erro de rede, salvar offline
+        if (!navigator.onLine || searchError.message.includes("fetch")) {
+          salvarRegistroOffline({
+            tipo: "entrada",
+            funcionario_id: funcionarioId,
+            data: hoje,
+            entrada: agora,
+          });
+          showMessage(
+            "📴 Sem conexão! Entrada salva offline e será sincronizada.",
+            "warning"
+          );
+          return;
+        }
+        throw searchError;
+      }
 
       // Verificar se já tem entrada sem saída
       if (registroAberto && registroAberto.length > 0) {
@@ -116,7 +252,7 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
         return;
       }
 
-      // Criar novo registro de entrada
+      // Tentar criar novo registro de entrada
       const { error: insertError } = await supabase
         .from("registros_ponto")
         .insert([
@@ -129,7 +265,24 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
           },
         ]);
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        // Se erro de rede, salvar offline
+        if (!navigator.onLine || insertError.message.includes("fetch")) {
+          salvarRegistroOffline({
+            tipo: "entrada",
+            funcionario_id: funcionarioId,
+            data: hoje,
+            entrada: agora,
+          });
+          showMessage(
+            "📴 Sem conexão! Entrada salva offline e será sincronizada.",
+            "warning"
+          );
+          return;
+        }
+        throw insertError;
+      }
+
       showMessage("✅ Entrada registrada com sucesso!", "success");
     } else if (acao === "saida") {
       // Buscar último registro sem saída (independente da data) - permite turno noturno
@@ -143,6 +296,14 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
 
       if (searchError) {
         console.error("Erro ao buscar registro:", searchError);
+        // Se erro de rede, não podemos buscar - informar usuário
+        if (!navigator.onLine || searchError.message.includes("fetch")) {
+          showMessage(
+            "📴 Sem conexão! Não foi possível verificar entrada. Tente novamente.",
+            "error"
+          );
+          return;
+        }
         throw searchError;
       }
 
@@ -182,7 +343,24 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
         })
         .eq("id", registro.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        // Se erro de rede, salvar offline
+        if (!navigator.onLine || updateError.message.includes("fetch")) {
+          salvarRegistroOffline({
+            tipo: "saida",
+            registro_id: registro.id,
+            funcionario_id: funcionarioId,
+            saida: agora,
+            total_horas: diffHours.toFixed(2),
+          });
+          showMessage(
+            "📴 Sem conexão! Saída salva offline e será sincronizada.",
+            "warning"
+          );
+          return;
+        }
+        throw updateError;
+      }
 
       const horasFormatadas = Math.floor(diffHours);
       const minutosFormatados = Math.round((diffHours - horasFormatadas) * 60);

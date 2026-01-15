@@ -74,6 +74,8 @@ async function verificarPin(nomeFuncionario, pin) {
 
 // Registrar ponto
 async function registrarPonto(funcionarioId, acao, botaoClicado) {
+  console.log("🔵 registrarPonto chamado:", { funcionarioId, acao });
+  
   // Desabilitar botões e mostrar loading
   const botoes = document.querySelectorAll("button[data-action]");
   botoes.forEach((btn) => (btn.disabled = true));
@@ -129,7 +131,6 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
 
       if (insertError) throw insertError;
       showMessage("✅ Entrada registrada com sucesso!", "success");
-      
     } else if (acao === "saida") {
       // Buscar último registro sem saída (independente da data) - permite turno noturno
       const { data: registroAberto, error: searchError } = await supabase
@@ -155,7 +156,7 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
 
       const registro = registroAberto[0];
       console.log("Registro a ser fechado:", registro);
-      
+
       const entrada = new Date(registro.entrada);
       const saida = new Date(agora);
 
@@ -223,19 +224,25 @@ funcionarioSelect.addEventListener("change", async (e) => {
 
 pontoForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+  console.log("🟢 Form submetido");
 
   const nomeFuncionario = funcionarioSelect.value; // Agora é NOME, não ID
   const pin = pinInput.value;
   const acao = e.submitter.dataset.action;
   const botaoClicado = e.submitter;
 
+  console.log("📝 Dados do form:", { nomeFuncionario, pin: "****", acao });
+
   if (!nomeFuncionario || !pin) {
     showMessage("❌ Preencha todos os campos!", "error");
     return;
   }
 
+  console.log("🔐 Verificando PIN...");
   // Verificar PIN usando função segura
   const funcionario = await verificarPin(nomeFuncionario, pin);
+  console.log("🔐 Resultado verificação:", funcionario ? "✅ OK" : "❌ Inválido");
+  
   if (!funcionario) {
     showMessage("❌ Nome ou PIN incorreto!", "error");
     pinInput.value = "";

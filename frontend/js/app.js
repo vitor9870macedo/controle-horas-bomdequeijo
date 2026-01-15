@@ -129,6 +129,7 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
 
       if (insertError) throw insertError;
       showMessage("✅ Entrada registrada com sucesso!", "success");
+      
     } else if (acao === "saida") {
       // Buscar último registro sem saída (independente da data) - permite turno noturno
       const { data: registroAberto, error: searchError } = await supabase
@@ -136,10 +137,15 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
         .select("*")
         .eq("funcionario_id", funcionarioId)
         .is("saida", null)
-        .order("created_at", { ascending: false })
+        .order("entrada", { ascending: false })
         .limit(1);
 
-      if (searchError) throw searchError;
+      if (searchError) {
+        console.error("Erro ao buscar registro:", searchError);
+        throw searchError;
+      }
+
+      console.log("Registros encontrados:", registroAberto);
 
       // Verificar se tem entrada sem saída
       if (!registroAberto || registroAberto.length === 0) {
@@ -148,6 +154,8 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
       }
 
       const registro = registroAberto[0];
+      console.log("Registro a ser fechado:", registro);
+      
       const entrada = new Date(registro.entrada);
       const saida = new Date(agora);
 

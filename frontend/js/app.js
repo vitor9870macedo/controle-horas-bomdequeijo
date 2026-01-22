@@ -68,7 +68,7 @@ async function sincronizarPendentes() {
   if (pendentes.length === 0) return;
 
   console.log(
-    `🔄 Sincronizando ${pendentes.length} registro(s) pendente(s)...`
+    `🔄 Sincronizando ${pendentes.length} registro(s) pendente(s)...`,
   );
 
   for (let i = pendentes.length - 1; i >= 0; i--) {
@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function getBrasiliaTime() {
   const now = new Date();
   return new Date(
-    now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
+    now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }),
   );
 }
 
@@ -236,7 +236,7 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
           });
           showMessage(
             "📴 Sem conexão! Entrada salva offline e será sincronizada.",
-            "warning"
+            "warning",
           );
           return;
         }
@@ -247,7 +247,7 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
       if (registroAberto && registroAberto.length > 0) {
         showMessage(
           "❌ Você já tem um registro de entrada aberto. Registre a saída primeiro!",
-          "error"
+          "error",
         );
         return;
       }
@@ -276,7 +276,7 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
           });
           showMessage(
             "📴 Sem conexão! Entrada salva offline e será sincronizada.",
-            "warning"
+            "warning",
           );
           return;
         }
@@ -300,7 +300,7 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
         if (!navigator.onLine || searchError.message.includes("fetch")) {
           showMessage(
             "📴 Sem conexão! Não foi possível verificar entrada. Tente novamente.",
-            "error"
+            "error",
           );
           return;
         }
@@ -329,7 +329,7 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
       if (diffHours < 0) {
         showMessage(
           "❌ Erro: horário de saída anterior à entrada. Contate o administrador.",
-          "error"
+          "error",
         );
         return;
       }
@@ -355,7 +355,7 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
           });
           showMessage(
             "📴 Sem conexão! Saída salva offline e será sincronizada.",
-            "warning"
+            "warning",
           );
           return;
         }
@@ -367,7 +367,7 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
 
       // Verificar se trabalhou em turno noturno (passou da meia-noite)
       const dataEntrada = new Date(registro.entrada).toLocaleDateString(
-        "pt-BR"
+        "pt-BR",
       );
       const dataSaida = saida.toLocaleDateString("pt-BR");
       const mensagemTurno =
@@ -377,7 +377,7 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
 
       showMessage(
         `✅ Saída registrada! Você trabalhou ${horasFormatadas}h ${minutosFormatados}min${mensagemTurno}.`,
-        "success"
+        "success",
       );
     }
 
@@ -483,9 +483,28 @@ function showMessage(text, type) {
 // Event Listeners
 funcionarioSelect.addEventListener("change", async (e) => {
   if (e.target.value) {
-    // Não mostramos registros sem validar PIN (segurança)
-    ultimoRegistroDiv.innerHTML =
-      "<div style='padding: 10px; text-align: center; opacity: 0.8;'><strong>ℹ️ Digite seu PIN para continuar</strong></div>";
+    const nomeSelecionado = e.target.value;
+
+    try {
+      // Buscar ID do funcionário pelo nome
+      const { data: funcionario, error } = await supabase
+        .from("funcionarios")
+        .select("id")
+        .eq("nome", nomeSelecionado)
+        .eq("ativo", true)
+        .single();
+
+      if (error) throw error;
+
+      if (funcionario) {
+        // Mostrar último registro imediatamente
+        await checkUltimoRegistro(funcionario.id);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar funcionário:", error);
+      ultimoRegistroDiv.innerHTML =
+        "<div style='padding: 10px; text-align: center; opacity: 0.8;'><strong>ℹ️ Digite seu PIN para continuar</strong></div>";
+    }
   } else {
     ultimoRegistroDiv.innerHTML = "";
   }
@@ -512,7 +531,7 @@ pontoForm.addEventListener("submit", async (e) => {
   const funcionario = await verificarPin(nomeFuncionario, pin);
   console.log(
     "🔐 Resultado verificação:",
-    funcionario ? "✅ OK" : "❌ Inválido"
+    funcionario ? "✅ OK" : "❌ Inválido",
   );
 
   if (!funcionario) {

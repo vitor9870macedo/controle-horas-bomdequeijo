@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -7,10 +7,12 @@
       name="description"
       content="Painel administrativo do sistema de ponto"
     />
-    <title>Área do Admin - Bom de Queijo</title>
+    <title>Área do Admin - VTek</title>
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/style.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   </head>
   <body>
     <div class="container admin-container">
@@ -30,8 +32,8 @@
       <div id="loginSection" class="card">
         <div class="header with-logo">
           <img
-            src="../imagens/arquivo para modal.jfif"
-            alt="Bom de Queijo"
+            src="../imagens/vtek-removebg-preview.png"
+            alt="VTek"
             class="header-logo"
           />
         </div>
@@ -43,7 +45,7 @@
               type="email"
               id="adminEmail"
               required
-              placeholder="admin@bomdequeijo.com"
+              placeholder="admin@vtek.com"
             />
           </div>
           <div class="form-group">
@@ -144,9 +146,14 @@
             <div class="card">
               <div class="table-header">
                 <h3>Registros de Ponto</h3>
-                <button id="exportBtn" class="btn btn-secondary">
-                  📥 Exportar Excel
-                </button>
+                <div class="header-actions">
+                  <button id="gerarPdfBtn" class="btn btn-primary">
+                    📄 Gerar PDF
+                  </button>
+                  <button id="exportBtn" class="btn btn-secondary">
+                    📥 Exportar Excel
+                  </button>
+                </div>
               </div>
               <div class="table-container">
                 <table id="registrosTable">

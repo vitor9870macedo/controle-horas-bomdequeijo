@@ -23,10 +23,10 @@ const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1cXV1aGNrZnVyc2p6YmVzb2ZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyNTMwODgsImV4cCI6MjA4MzgyOTA4OH0.z8-DCHU_2EeqhgwLd1IJ30bonLxS9jQIHfWcKZACwW4";
 
 /**
- * Cliente Supabase
+
  * Este objeto é usado em app.js e admin.js para fazer requisições
  */
 export const supabase = window.supabase.createClient(
   SUPABASE_URL,
-  SUPABASE_ANON_KEY
+  SUPABASE_ANON_KEY,
 );

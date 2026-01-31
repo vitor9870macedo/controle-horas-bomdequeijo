@@ -920,27 +920,28 @@ window.toggleFuncionarioStatus = async (funcionarioId, statusAtual) => {
 window.deleteFuncionario = async (funcionarioId, nome) => {
   if (
     !confirm(
-      `⚠️ Deseja realmente excluir o funcionário "${nome}"?\n\nEsta ação também excluirá todos os registros de ponto deste funcionário e NÃO pode ser desfeita!`,
+      `⚠️ Deseja realmente excluir o funcionário "${nome}"?\n\nO funcionário será desativado e não poderá mais registrar ponto.`,
     )
   ) {
     return;
   }
 
   try {
+    // Soft delete - apenas desativa ao invés de excluir
     const { error } = await supabase
       .from("funcionarios")
-      .delete()
+      .update({ ativo: false })
       .eq("id", funcionarioId);
 
     if (error) throw error;
 
-    alert("✅ Funcionário excluído com sucesso!");
+    alert("✅ Funcionário desativado com sucesso!");
     await loadFuncionarios();
     await updateStats();
     await loadRegistros();
   } catch (error) {
     console.error("Erro ao excluir funcionário:", error);
-    alert("❌ Erro ao excluir funcionário");
+    alert("❌ Erro ao desativar funcionário: " + error.message);
   }
 };
 

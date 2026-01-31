@@ -19,6 +19,9 @@ let loadingOverlay = null;
  * Mostrar loading
  */
 function showLoading(message = "Carregando...") {
+  // Garantir que o body existe
+  if (!document.body) return;
+  
   if (!loadingOverlay) {
     loadingOverlay = document.createElement("div");
     loadingOverlay.id = "loadingOverlay";
@@ -52,7 +55,8 @@ function showLoading(message = "Carregando...") {
     document.body.appendChild(loadingOverlay);
   } else {
     loadingOverlay.style.display = "flex";
-    loadingOverlay.querySelector("#loadingMessage").textContent = message;
+    const messageEl = loadingOverlay.querySelector("#loadingMessage");
+    if (messageEl) messageEl.textContent = message;
   }
 }
 

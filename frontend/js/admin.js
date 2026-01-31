@@ -30,14 +30,14 @@ async function registrarAlteracao(params) {
 
   try {
     const { data, error } = await supabase.rpc("registrar_alteracao_admin", {
-      p_tabela: tabela,
-      p_registro_id: registroId,
-      p_funcionario_id: funcionarioId,
       p_admin_nome: adminNome,
       p_campo_alterado: campoAlterado,
+      p_funcionario_id: funcionarioId,
+      p_motivo: motivo,
+      p_registro_id: registroId,
+      p_tabela: tabela,
       p_valor_anterior: valorAnterior,
       p_valor_novo: valorNovo,
-      p_motivo: motivo,
     });
 
     if (error) throw error;
@@ -106,8 +106,8 @@ async function editarHorario(params) {
           campoAlterado === "saida"
             ? new Date(novoValor)
             : registro.saida
-            ? new Date(registro.saida)
-            : null;
+              ? new Date(registro.saida)
+              : null;
 
         if (entrada && saida) {
           const diffMs = saida - entrada;
@@ -140,7 +140,7 @@ async function editarHorario(params) {
     } catch (auditoriaError) {
       console.error(
         "⚠️ Alteração salva, mas auditoria falhou:",
-        auditoriaError
+        auditoriaError,
       );
       console.error("Detalhes do erro:", {
         message: auditoriaError.message,
@@ -195,7 +195,7 @@ function mostrarModalEdicao(registro, campo, adminNome, onSave) {
         registro.funcionarios?.nome || "N/A"
       }</p>
       <p><strong>Data:</strong> ${new Date(
-        registro.data + "T00:00:00"
+        registro.data + "T00:00:00",
       ).toLocaleDateString("pt-BR")}</p>
       <p><strong>Valor atual:</strong> ${valorAtual}</p>
       
@@ -277,7 +277,7 @@ function mostrarModalEdicao(registro, campo, adminNome, onSave) {
       }
 
       alert(
-        `✅ ${campoLabel} atualizado com sucesso!\n\nAlteração registrada no histórico de auditoria.`
+        `✅ ${campoLabel} atualizado com sucesso!\n\nAlteração registrada no histórico de auditoria.`,
       );
     } catch (error) {
       console.error("Erro ao editar:", error);
@@ -321,26 +321,44 @@ async function mostrarHistorico(registroId, funcionarioNome) {
       '<p style="text-align: center; opacity: 0.7;">Nenhuma alteração registrada</p>';
   } else {
     historicoHTML = historico
-      .map(
-        (h) => `
+      .map((h) => {
+        // Formatar valores de data/hora
+        const formatarValor = (valor) => {
+          if (!valor || valor === "null") return "Não registrado";
+          try {
+            const data = new Date(valor);
+            if (!isNaN(data.getTime())) {
+              return data.toLocaleString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+            }
+          } catch (e) {}
+          return valor;
+        };
+
+        return `
       <div style="padding: 12px; background: var(--bg-dark); border-radius: 8px; margin-bottom: 12px; border-left: 3px solid var(--warning);">
         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
           <strong>${h.admin_nome}</strong>
           <small style="opacity: 0.7;">${new Date(h.created_at).toLocaleString(
-            "pt-BR"
+            "pt-BR",
           )}</small>
         </div>
         <div><strong>Campo:</strong> ${h.campo_alterado}</div>
-        <div><strong>De:</strong> ${h.valor_anterior}</div>
-        <div><strong>Para:</strong> ${h.valor_novo}</div>
+        <div><strong>De:</strong> ${formatarValor(h.valor_anterior)}</div>
+        <div><strong>Para:</strong> ${formatarValor(h.valor_novo)}</div>
         ${
           h.motivo
             ? `<div style="margin-top: 8px; padding: 8px; background: var(--card-hover); border-radius: 4px;"><em>"${h.motivo}"</em></div>`
             : ""
         }
       </div>
-    `
-      )
+    `;
+      })
       .join("");
   }
 
@@ -391,11 +409,11 @@ const applyFiltersBtn = document.getElementById("applyFilters");
 // Filtros de Pagamento
 const filterPagamentoFunc = document.getElementById("filterPagamentoFunc");
 const filterPagamentoPeriodo = document.getElementById(
-  "filterPagamentoPeriodo"
+  "filterPagamentoPeriodo",
 );
 const filterPagamentoStatus = document.getElementById("filterPagamentoStatus");
 const applyPagamentoFiltersBtn = document.getElementById(
-  "applyPagamentoFilters"
+  "applyPagamentoFilters",
 );
 
 // Stats
@@ -415,6 +433,7 @@ const cancelAddBtn = document.getElementById("cancelAddBtn");
 const exportBtn = document.getElementById("exportBtn");
 
 let currentUser = null;
+let currentAdminName = "Administrador"; // Nome padrão
 
 // Verificar sessão ao carregar
 async function checkSession() {
@@ -423,9 +442,28 @@ async function checkSession() {
   } = await supabase.auth.getSession();
   if (session) {
     currentUser = session.user;
+    await loadAdminName();
     showDashboard();
   } else {
     showLogin();
+  }
+}
+
+// Carregar nome do admin
+async function loadAdminName() {
+  try {
+    const { data, error } = await supabase
+      .from("funcionarios")
+      .select("nome")
+      .eq("role", "admin")
+      .limit(1)
+      .single();
+
+    if (data && data.nome) {
+      currentAdminName = data.nome;
+    }
+  } catch (error) {
+    console.log("Usando nome padrão de admin");
   }
 }
 
@@ -458,6 +496,7 @@ loginForm.addEventListener("submit", async (e) => {
     if (error) throw error;
 
     currentUser = data.user;
+    await loadAdminName();
     showMessage(loginMessage, "Login realizado com sucesso!", "success");
 
     setTimeout(() => {
@@ -555,14 +594,14 @@ async function loadFuncionarios() {
                       func.ativo ? "btn-danger" : "btn-success"
                     }" 
                             onclick="toggleFuncionarioStatus('${func.id}', ${
-        func.ativo
-      })">
+                              func.ativo
+                            })">
                         ${func.ativo ? "Desativar" : "Ativar"}
                     </button>
                     <button class="btn btn-small btn-delete" 
                             onclick="deleteFuncionario('${func.id}', '${
-        func.nome
-      }')">
+                              func.nome
+                            }')">
                         🗑️ Excluir
                     </button>
                 </td>
@@ -618,7 +657,7 @@ async function loadRegistros(filtros = {}) {
       const tr = document.createElement("tr");
 
       const dataFormatada = new Date(
-        registro.data + "T00:00:00"
+        registro.data + "T00:00:00",
       ).toLocaleDateString("pt-BR");
       const entradaFormatada = registro.entrada
         ? new Date(registro.entrada).toLocaleTimeString("pt-BR", {
@@ -635,7 +674,7 @@ async function loadRegistros(filtros = {}) {
 
       const totalHoras = registro.total_horas
         ? `${Math.floor(registro.total_horas)}h ${Math.round(
-            (registro.total_horas - Math.floor(registro.total_horas)) * 60
+            (registro.total_horas - Math.floor(registro.total_horas)) * 60,
           )}min`
         : "--";
 
@@ -661,7 +700,7 @@ async function loadRegistros(filtros = {}) {
         ? `<span style="color: var(--warning); font-size: 0.85em;" title="Editado por ${
             registro.editado_por
           } em ${new Date(registro.editado_em).toLocaleString(
-            "pt-BR"
+            "pt-BR",
           )}">✏️</span>`
         : "";
 
@@ -696,7 +735,7 @@ async function loadRegistros(filtros = {}) {
         const tr = this.closest("tr");
         const registro = JSON.parse(tr.dataset.registro);
 
-        mostrarModalEdicao(registro, "entrada", currentUser.nome, () => {
+        mostrarModalEdicao(registro, "entrada", currentAdminName, () => {
           loadRegistros();
           updateStats();
         });
@@ -709,7 +748,7 @@ async function loadRegistros(filtros = {}) {
         const tr = this.closest("tr");
         const registro = JSON.parse(tr.dataset.registro);
 
-        mostrarModalEdicao(registro, "saida", currentUser.nome, () => {
+        mostrarModalEdicao(registro, "saida", currentAdminName, () => {
           loadRegistros();
           updateStats();
         });
@@ -881,7 +920,7 @@ window.toggleFuncionarioStatus = async (funcionarioId, statusAtual) => {
 window.deleteFuncionario = async (funcionarioId, nome) => {
   if (
     !confirm(
-      `⚠️ Deseja realmente excluir o funcionário "${nome}"?\n\nEsta ação também excluirá todos os registros de ponto deste funcionário e NÃO pode ser desfeita!`
+      `⚠️ Deseja realmente excluir o funcionário "${nome}"?\n\nEsta ação também excluirá todos os registros de ponto deste funcionário e NÃO pode ser desfeita!`,
     )
   ) {
     return;
@@ -914,7 +953,7 @@ async function loadPagamentos(filtros = {}) {
         `
         *,
         funcionarios (id, nome, valor_hora)
-      `
+      `,
       )
       .not("saida", "is", null)
       .order("data", { ascending: false });
@@ -1073,7 +1112,7 @@ async function loadPagamentos(filtros = {}) {
 // Renderizar um registro de pagamento
 function renderRegistroPagamento(registro, funcionario) {
   const dataFormatada = new Date(
-    registro.data + "T00:00:00"
+    registro.data + "T00:00:00",
   ).toLocaleDateString("pt-BR");
   const horas = parseFloat(registro.total_horas || 0);
   const valorHora = parseFloat(funcionario.valor_hora || 0);
@@ -1188,7 +1227,7 @@ exportBtn.addEventListener("click", async () => {
 
     data.forEach((registro) => {
       const dataFormatada = new Date(
-        registro.data + "T00:00:00"
+        registro.data + "T00:00:00",
       ).toLocaleDateString("pt-BR");
       const entradaFormatada = registro.entrada
         ? new Date(registro.entrada).toLocaleTimeString("pt-BR")
@@ -1219,6 +1258,352 @@ exportBtn.addEventListener("click", async () => {
     alert("Erro ao exportar dados");
   }
 });
+
+// ============================================
+// GERAR PDF - FOLHA DE PAGAMENTO
+// ============================================
+document.getElementById("gerarPdfBtn").addEventListener("click", async () => {
+  try {
+    // Pegar filtros atuais
+    const funcionarioId = filterFuncionario.value || null;
+    const dataInicio = filterDataInicio.value || null;
+    const dataFim = filterDataFim.value || null;
+
+    // Buscar dados filtrados
+    let query = supabase
+      .from("registros_ponto")
+      .select("*, funcionarios(nome, valor_hora)")
+      .not("saida", "is", null)
+      .order("data", { ascending: false });
+
+    if (funcionarioId) {
+      query = query.eq("funcionario_id", funcionarioId);
+    }
+    if (dataInicio) {
+      query = query.gte("data", dataInicio);
+    }
+    if (dataFim) {
+      query = query.lte("data", dataFim);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      alert("⚠️ Nenhum registro encontrado com os filtros aplicados!");
+      return;
+    }
+
+    // Gerar PDF
+    gerarPDFFolhaPagamento(data, {
+      funcionarioId,
+      dataInicio,
+      dataFim,
+    });
+  } catch (error) {
+    console.error("Erro ao gerar PDF:", error);
+    alert("❌ Erro ao gerar PDF");
+  }
+});
+
+/**
+ * Gerar PDF da folha de pagamento
+ */
+function gerarPDFFolhaPagamento(registros, filtros) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // Configurações
+  const pageWidth = doc.internal.pageSize.width;
+  let yPos = 20;
+
+  // ========== CABEÇALHO ==========
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.text("FOLHA DE PAGAMENTO", pageWidth / 2, yPos, { align: "center" });
+
+  yPos += 7;
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.text("Bom de Queijo", pageWidth / 2, yPos, { align: "center" });
+
+  yPos += 10;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+
+  // Informações do relatório
+  const hoje = new Date().toLocaleDateString("pt-BR");
+  doc.text(`Data de emissão: ${hoje}`, 14, yPos);
+
+  yPos += 6;
+
+  // Mostrar filtros aplicados
+  if (filtros.funcionarioId) {
+    const funcionarioNome = registros[0]?.funcionarios?.nome || "N/A";
+    doc.text(`Funcionário: ${funcionarioNome}`, 14, yPos);
+    yPos += 6;
+  } else {
+    doc.text(`Funcionário: Todos`, 14, yPos);
+    yPos += 6;
+  }
+
+  if (filtros.dataInicio || filtros.dataFim) {
+    const inicio = filtros.dataInicio
+      ? new Date(filtros.dataInicio + "T00:00:00").toLocaleDateString("pt-BR")
+      : "Início";
+    const fim = filtros.dataFim
+      ? new Date(filtros.dataFim + "T00:00:00").toLocaleDateString("pt-BR")
+      : "Hoje";
+    doc.text(`Período: ${inicio} a ${fim}`, 14, yPos);
+    yPos += 6;
+  }
+
+  yPos += 5;
+
+  // ========== VERIFICAR SE É UM FUNCIONÁRIO OU TODOS ==========
+  if (filtros.funcionarioId) {
+    // ========== UM FUNCIONÁRIO ESPECÍFICO ==========
+    const tableData = registros.map((r) => {
+      const data = new Date(r.data + "T00:00:00").toLocaleDateString("pt-BR");
+      const entrada = r.entrada
+        ? new Date(r.entrada).toLocaleTimeString("pt-BR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "--:--";
+      const saida = r.saida
+        ? new Date(r.saida).toLocaleTimeString("pt-BR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "--:--";
+      const horas = r.total_horas ? r.total_horas.toFixed(2) : "0.00";
+      const valorHora = parseFloat(r.funcionarios?.valor_hora || 0);
+      const valor = (parseFloat(horas) * valorHora).toFixed(2);
+
+      return [data, entrada, saida, `${horas}h`, `R$ ${valor}`];
+    });
+
+    doc.autoTable({
+      head: [["Data", "Entrada", "Saída", "Horas", "Valor"]],
+      body: tableData,
+      startY: yPos,
+      theme: "grid",
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: 255,
+        fontStyle: "bold",
+        fontSize: 10,
+      },
+      bodyStyles: {
+        fontSize: 9,
+        textColor: 50,
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
+      columnStyles: {
+        0: { cellWidth: 30 }, // Data
+        1: { cellWidth: 25, halign: "center" }, // Entrada
+        2: { cellWidth: 25, halign: "center" }, // Saída
+        3: { cellWidth: 25, halign: "center" }, // Horas
+        4: { cellWidth: 40, halign: "right" }, // Valor
+      },
+    });
+
+    // Totalizadores do funcionário
+    const finalY = doc.lastAutoTable.finalY;
+    yPos = finalY + 10;
+
+    const totalHoras = registros.reduce(
+      (sum, r) => sum + parseFloat(r.total_horas || 0),
+      0,
+    );
+    const totalValor = registros.reduce((sum, r) => {
+      const horas = parseFloat(r.total_horas || 0);
+      const valorHora = parseFloat(r.funcionarios?.valor_hora || 0);
+      return sum + horas * valorHora;
+    }, 0);
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setLineWidth(0.5);
+    doc.line(14, yPos, pageWidth - 14, yPos);
+    yPos += 8;
+
+    doc.setTextColor(0, 0, 0);
+    doc.text("TOTAIS:", 14, yPos);
+    doc.text(`Total de Horas:`, 100, yPos);
+    doc.text(`${totalHoras.toFixed(2)}h`, 140, yPos);
+
+    yPos += 8;
+    doc.setFontSize(13);
+    doc.setTextColor(0, 128, 0);
+    doc.text("Total a Pagar:", 100, yPos);
+    doc.text(`R$ ${totalValor.toFixed(2)}`, 140, yPos);
+  } else {
+    // ========== TODOS OS FUNCIONÁRIOS - AGRUPADO ==========
+
+    // Agrupar registros por funcionário
+    const registrosPorFuncionario = {};
+    registros.forEach((r) => {
+      const funcNome = r.funcionarios.nome;
+      if (!registrosPorFuncionario[funcNome]) {
+        registrosPorFuncionario[funcNome] = {
+          nome: funcNome,
+          valorHora: r.funcionarios.valor_hora,
+          registros: [],
+        };
+      }
+      registrosPorFuncionario[funcNome].registros.push(r);
+    });
+
+    // Ordenar funcionários por nome
+    const funcionariosOrdenados = Object.keys(registrosPorFuncionario).sort();
+
+    // Totais gerais
+    let totalGeralHoras = 0;
+    let totalGeralValor = 0;
+
+    // Gerar tabela para cada funcionário
+    funcionariosOrdenados.forEach((nomeFuncionario, index) => {
+      const grupo = registrosPorFuncionario[nomeFuncionario];
+
+      // Verificar se precisa de nova página
+      if (yPos > 240) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      // Nome do funcionário
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(41, 128, 185);
+      doc.text(`${nomeFuncionario}`, 14, yPos);
+      doc.setTextColor(0, 0, 0);
+      yPos += 2;
+
+      // Tabela do funcionário
+      const tableData = grupo.registros.map((r) => {
+        const data = new Date(r.data + "T00:00:00").toLocaleDateString("pt-BR");
+        const entrada = r.entrada
+          ? new Date(r.entrada).toLocaleTimeString("pt-BR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "--:--";
+        const saida = r.saida
+          ? new Date(r.saida).toLocaleTimeString("pt-BR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "--:--";
+        const horas = r.total_horas ? r.total_horas.toFixed(2) : "0.00";
+        const valorHora = parseFloat(r.funcionarios?.valor_hora || 0);
+        const valor = (parseFloat(horas) * valorHora).toFixed(2);
+
+        return [data, entrada, saida, `${horas}h`, `R$ ${valor}`];
+      });
+
+      doc.autoTable({
+        head: [["Data", "Entrada", "Saída", "Horas", "Valor"]],
+        body: tableData,
+        startY: yPos,
+        theme: "grid",
+        headStyles: {
+          fillColor: [52, 152, 219],
+          textColor: 255,
+          fontStyle: "bold",
+          fontSize: 9,
+        },
+        bodyStyles: {
+          fontSize: 8,
+          textColor: 50,
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245],
+        },
+        columnStyles: {
+          0: { cellWidth: 30 },
+          1: { cellWidth: 25, halign: "center" },
+          2: { cellWidth: 25, halign: "center" },
+          3: { cellWidth: 25, halign: "center" },
+          4: { cellWidth: 40, halign: "right" },
+        },
+      });
+
+      // Calcular totais do funcionário
+      const totalHorasFuncionario = grupo.registros.reduce(
+        (sum, r) => sum + parseFloat(r.total_horas || 0),
+        0,
+      );
+      const totalValorFuncionario = grupo.registros.reduce((sum, r) => {
+        const horas = parseFloat(r.total_horas || 0);
+        const valorHora = parseFloat(r.funcionarios?.valor_hora || 0);
+        return sum + horas * valorHora;
+      }, 0);
+
+      totalGeralHoras += totalHorasFuncionario;
+      totalGeralValor += totalValorFuncionario;
+
+      // Subtotal do funcionário
+      yPos = doc.lastAutoTable.finalY + 5;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Subtotal ${nomeFuncionario}:`, 90, yPos);
+      doc.text(`${totalHorasFuncionario.toFixed(2)}h`, 130, yPos);
+      doc.setTextColor(0, 128, 0);
+      doc.text(`R$ ${totalValorFuncionario.toFixed(2)}`, 155, yPos);
+      doc.setTextColor(0, 0, 0);
+
+      yPos += 10;
+    });
+
+    // ========== TOTAIS GERAIS ==========
+    // Verificar se precisa de nova página para totais
+    if (yPos > 250) {
+      doc.addPage();
+      yPos = 20;
+    }
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setLineWidth(0.8);
+    doc.line(14, yPos, pageWidth - 14, yPos);
+    yPos += 8;
+
+    doc.setTextColor(0, 0, 0);
+    doc.text("TOTAIS GERAIS:", 14, yPos);
+    doc.text(`Total de Horas:`, 100, yPos);
+    doc.text(`${totalGeralHoras.toFixed(2)}h`, 140, yPos);
+
+    yPos += 8;
+    doc.setFontSize(14);
+    doc.setTextColor(0, 128, 0);
+    doc.text("Total a Pagar:", 100, yPos);
+    doc.text(`R$ ${totalGeralValor.toFixed(2)}`, 140, yPos);
+  }
+
+  // ========== RODAPÉ ==========
+  doc.setFontSize(8);
+  doc.setTextColor(100, 100, 100);
+  doc.setFont("helvetica", "italic");
+  const rodape = `Relatório gerado em ${new Date().toLocaleString("pt-BR")} - Sistema Bom de Queijo`;
+  doc.text(rodape, pageWidth / 2, doc.internal.pageSize.height - 10, {
+    align: "center",
+  });
+
+  // ========== DOWNLOAD ==========
+  const nomeArquivo = filtros.funcionarioId
+    ? `folha_pagamento_${registros[0]?.funcionarios?.nome.replace(/\s+/g, "_")}_${hoje.replace(/\//g, "-")}.pdf`
+    : `folha_pagamento_geral_${hoje.replace(/\//g, "-")}.pdf`;
+
+  doc.save(nomeArquivo);
+
+  alert("✅ PDF gerado com sucesso!");
+}
 
 // Mostrar mensagem
 function showMessage(element, text, type) {

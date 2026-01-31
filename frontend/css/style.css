@@ -1070,3 +1070,13 @@ tbody tr:hover {
     font-size: 0.8rem;
   }
 }
+
+/* ==================== ANIMAÇÕES ==================== */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

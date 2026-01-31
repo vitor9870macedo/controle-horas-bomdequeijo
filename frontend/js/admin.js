@@ -541,11 +541,12 @@ function showDashboard() {
 }
 
 // Login
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
+if (loginForm) {
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  const email = document.getElementById("adminEmail").value;
-  const password = document.getElementById("adminPassword").value;
+    const email = document.getElementById("adminEmail").value;
+    const password = document.getElementById("adminPassword").value;
 
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -566,14 +567,17 @@ loginForm.addEventListener("submit", async (e) => {
     console.error("Erro no login:", error);
     showMessage(loginMessage, "Email ou senha incorretos!", "error");
   }
-});
+  });
+}
 
 // Logout
-logoutBtn.addEventListener("click", async () => {
-  await supabase.auth.signOut();
-  currentUser = null;
-  showLogin();
-});
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    await supabase.auth.signOut();
+    currentUser = null;
+    showLogin();
+  });
+}
 
 // ==================== CONTROLE DE ABAS ====================
 document.querySelectorAll(".tab-btn").forEach((btn) => {

@@ -1323,11 +1323,6 @@ function gerarPDFFolhaPagamento(registros, filtros) {
   doc.setFont("helvetica", "bold");
   doc.text("RELATÓRIO DE PAGAMENTO", pageWidth / 2, yPos, { align: "center" });
 
-  yPos += 7;
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "normal");
-  doc.text("VTek", pageWidth / 2, yPos, { align: "center" });
-
   yPos += 10;
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");

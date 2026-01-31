@@ -33,8 +33,9 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, sans-serif;
   background: var(--bg-dark);
   color: var(--text-light);
   min-height: 100vh;
@@ -47,7 +48,8 @@ body {
 
 /* Fundo com imagem para página de registro de ponto */
 body.funcionario-page {
-  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
     url("../imagens/arquivo fundo layout.png");
   background-size: cover;
   background-position: center;
@@ -90,13 +92,7 @@ body.funcionario-page {
 }
 
 .header-logo {
-  width: 150px;
-  height: 150px;
-  margin: 0 auto 16px;
-  display: block;
-  border-radius: 50%;
-  box-shadow: 0 4px 12px rgba(0, 217, 255, 0.2);
-  object-fit: cover;
+  display: none;
 }
 
 .header h1 {

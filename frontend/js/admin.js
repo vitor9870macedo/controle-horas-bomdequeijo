@@ -1321,12 +1321,12 @@ function gerarPDFFolhaPagamento(registros, filtros) {
   // ========== CABEÇALHO ==========
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("FOLHA DE PAGAMENTO", pageWidth / 2, yPos, { align: "center" });
+  doc.text("RELATÓRIO DE PAGAMENTO", pageWidth / 2, yPos, { align: "center" });
 
   yPos += 7;
   doc.setFontSize(12);
   doc.setFont("helvetica", "normal");
-  doc.text("Bom de Queijo", pageWidth / 2, yPos, { align: "center" });
+  doc.text("VTek", pageWidth / 2, yPos, { align: "center" });
 
   yPos += 10;
   doc.setFontSize(10);
@@ -1590,15 +1590,15 @@ function gerarPDFFolhaPagamento(registros, filtros) {
   doc.setFontSize(8);
   doc.setTextColor(100, 100, 100);
   doc.setFont("helvetica", "italic");
-  const rodape = `Relatório gerado em ${new Date().toLocaleString("pt-BR")} - Sistema Bom de Queijo`;
+  const rodape = `Relatório gerado em ${new Date().toLocaleString("pt-BR")} - Sistema VTek`;
   doc.text(rodape, pageWidth / 2, doc.internal.pageSize.height - 10, {
     align: "center",
   });
 
   // ========== DOWNLOAD ==========
   const nomeArquivo = filtros.funcionarioId
-    ? `folha_pagamento_${registros[0]?.funcionarios?.nome.replace(/\s+/g, "_")}_${hoje.replace(/\//g, "-")}.pdf`
-    : `folha_pagamento_geral_${hoje.replace(/\//g, "-")}.pdf`;
+    ? `relatorio_pagamento_${registros[0]?.funcionarios?.nome.replace(/\s+/g, "_")}_${hoje.replace(/\//g, "-")}.pdf`
+    : `relatorio_pagamento_geral_${hoje.replace(/\//g, "-")}.pdf`;
 
   doc.save(nomeArquivo);
 

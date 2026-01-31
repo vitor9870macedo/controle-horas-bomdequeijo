@@ -10,66 +10,6 @@
 import { supabase } from "./config.js";
 
 // ============================================
-// LOADING OVERLAY
-// ============================================
-
-let loadingOverlay = null;
-
-/**
- * Mostrar loading
- */
-function showLoading(message = "Carregando...") {
-  // Garantir que o body existe
-  if (!document.body) return;
-  
-  if (!loadingOverlay) {
-    loadingOverlay = document.createElement("div");
-    loadingOverlay.id = "loadingOverlay";
-    loadingOverlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 99999;
-      backdrop-filter: blur(4px);
-    `;
-    loadingOverlay.innerHTML = `
-      <div style="text-align: center; color: var(--text-light);">
-        <div class="spinner" style="
-          width: 50px;
-          height: 50px;
-          border: 4px solid rgba(0, 217, 255, 0.3);
-          border-top: 4px solid var(--primary);
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin: 0 auto 16px;
-        "></div>
-        <p id="loadingMessage" style="font-size: 16px; font-weight: 500;">${message}</p>
-      </div>
-    `;
-    document.body.appendChild(loadingOverlay);
-  } else {
-    loadingOverlay.style.display = "flex";
-    const messageEl = loadingOverlay.querySelector("#loadingMessage");
-    if (messageEl) messageEl.textContent = message;
-  }
-}
-
-/**
- * Ocultar loading
- */
-function hideLoading() {
-  if (loadingOverlay) {
-    loadingOverlay.style.display = "none";
-  }
-}
-
-// ============================================
 // FUNÇÕES DE AUDITORIA
 // ============================================
 
@@ -541,12 +481,11 @@ function showDashboard() {
 }
 
 // Login
-if (loginForm) {
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    const email = document.getElementById("adminEmail").value;
-    const password = document.getElementById("adminPassword").value;
+  const email = document.getElementById("adminEmail").value;
+  const password = document.getElementById("adminPassword").value;
 
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -567,17 +506,14 @@ if (loginForm) {
     console.error("Erro no login:", error);
     showMessage(loginMessage, "Email ou senha incorretos!", "error");
   }
-  });
-}
+});
 
 // Logout
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", async () => {
-    await supabase.auth.signOut();
-    currentUser = null;
-    showLogin();
-  });
-}
+logoutBtn.addEventListener("click", async () => {
+  await supabase.auth.signOut();
+  currentUser = null;
+  showLogin();
+});
 
 // ==================== CONTROLE DE ABAS ====================
 document.querySelectorAll(".tab-btn").forEach((btn) => {
@@ -600,15 +536,10 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
 
 // Carregar dados do dashboard
 async function loadDashboardData() {
-  showLoading("Carregando dados...");
-  try {
-    await loadFuncionarios();
-    await loadRegistros();
-    await loadPagamentos();
-    await updateStats();
-  } finally {
-    hideLoading();
-  }
+  await loadFuncionarios();
+  await loadRegistros();
+  await loadPagamentos();
+  await updateStats();
 }
 
 // Carregar funcionários
@@ -685,7 +616,6 @@ async function loadFuncionarios() {
 
 // Carregar registros
 async function loadRegistros(filtros = {}) {
-  showLoading("Carregando registros...");
   try {
     let query = supabase
       .from("registros_ponto")
@@ -836,8 +766,6 @@ async function loadRegistros(filtros = {}) {
     });
   } catch (error) {
     console.error("Erro ao carregar registros:", error);
-  } finally {
-    hideLoading();
   }
 }
 
@@ -897,7 +825,7 @@ async function updateStats(filtros = {}) {
 }
 
 // Aplicar filtros
-applyFiltersBtn.addEventListener("click", async () => {
+applyFiltersBtn.addEventListener("click", () => {
   const statusPagamento =
     document.getElementById("filterPagamento")?.value || null;
   const filtros = {
@@ -906,8 +834,8 @@ applyFiltersBtn.addEventListener("click", async () => {
     dataFim: filterDataFim.value || null,
     statusPagamento: statusPagamento,
   };
-  await loadRegistros(filtros);
-  await updateStats(filtros);
+  loadRegistros(filtros);
+  updateStats(filtros);
 });
 
 // Aplicar filtros de pagamento
@@ -1020,7 +948,6 @@ window.deleteFuncionario = async (funcionarioId, nome) => {
 
 // Carregar pagamentos agrupados por funcionário
 async function loadPagamentos(filtros = {}) {
-  showLoading("Carregando pagamentos...");
   try {
     let query = supabase
       .from("registros_ponto")
@@ -1181,8 +1108,6 @@ async function loadPagamentos(filtros = {}) {
     });
   } catch (error) {
     console.error("Erro ao carregar pagamentos:", error);
-  } finally {
-    hideLoading();
   }
 }
 
@@ -1290,7 +1215,6 @@ novoFuncionarioForm.addEventListener("submit", async (e) => {
 
 // Exportar para Excel
 exportBtn.addEventListener("click", async () => {
-  showLoading("Gerando relatório...");
   try {
     const { data, error } = await supabase
       .from("registros_ponto")
@@ -1334,8 +1258,6 @@ exportBtn.addEventListener("click", async () => {
   } catch (error) {
     console.error("Erro ao exportar:", error);
     alert("Erro ao exportar dados");
-  } finally {
-    hideLoading();
   }
 });
 
@@ -1343,7 +1265,6 @@ exportBtn.addEventListener("click", async () => {
 // GERAR PDF - FOLHA DE PAGAMENTO
 // ============================================
 document.getElementById("gerarPdfBtn").addEventListener("click", async () => {
-  showLoading("Gerando PDF...");
   try {
     // Pegar filtros atuais
     const funcionarioId = filterFuncionario.value || null;
@@ -1679,13 +1600,7 @@ function gerarPDFFolhaPagamento(registros, filtros) {
   doc.save(nomeArquivo);
 
   alert("✅ PDF gerado com sucesso!");
-  } catch (error) {
-    console.error("Erro ao gerar PDF:", error);
-    alert("❌ Erro ao gerar PDF: " + error.message);
-  } finally {
-    hideLoading();
-  }
-});
+}
 
 // Mostrar mensagem
 function showMessage(element, text, type) {

@@ -548,6 +548,7 @@ async function loadFuncionarios() {
     const { data, error } = await supabase
       .from("funcionarios")
       .select("*")
+      .eq("ativo", true)
       .order("nome");
 
     if (error) throw error;

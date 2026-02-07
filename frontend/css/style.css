@@ -48,12 +48,7 @@ body {
 
 /* Fundo com imagem para página de registro de ponto */
 body.funcionario-page {
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-    url("../imagens/arquivo fundo layout.png");
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+  background: #000000;
 }
 
 /* ==================== CONTAINER ==================== */
@@ -117,13 +112,12 @@ body.funcionario-page {
 }
 
 .back-btn {
-  position: absolute;
-  left: 0;
-  top: 0;
+  display: inline-block;
+  margin-bottom: 16px;
   color: var(--primary);
   text-decoration: none;
   font-weight: 600;
-  padding: 6px 12px;
+  padding: 8px 16px;
   border-radius: 8px;
   transition: all 0.3s;
   font-size: 0.9rem;

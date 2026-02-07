@@ -776,7 +776,7 @@ async function updateStats(filtros = {}) {
     // Construir query com filtros
     let query = supabase
       .from("registros_ponto")
-      .select("total_horas, funcionarios!inner(valor_hora, ativo)", {
+      .select("total_horas, pago, funcionarios!inner(valor_hora, ativo)", {
         count: "exact",
       })
       .not("total_horas", "is", null)
@@ -803,9 +803,10 @@ async function updateStats(filtros = {}) {
       0;
     totalHorasEl.textContent = `${Math.floor(totalHoras)}h`;
 
-    // Calcular total a pagar
+    // Calcular total a pagar (apenas registros NÃO pagos)
     const totalPagar =
       registros?.reduce((sum, r) => {
+        if (r.pago) return sum; // Pula registros já pagos
         const horas = parseFloat(r.total_horas || 0);
         const valorHora = parseFloat(r.funcionarios?.valor_hora || 0);
         return sum + horas * valorHora;
@@ -1489,7 +1490,13 @@ function gerarPDFFolhaPagamento(registros, filtros) {
       const status = funcionarioAtivo === false ? " (Desativado)" : "";
       doc.text(`${nomeFuncionario}${status}`, 14, yPos);
       doc.setTextColor(0, 0, 0);
-      yPos += 2;
+      yPos += 6;
+
+      // Linha separadora
+      doc.setDrawColor(41, 128, 185);
+      doc.setLineWidth(0.3);
+      doc.line(14, yPos, pageWidth - 14, yPos);
+      yPos += 4;
 
       // Tabela do funcionário
       const tableData = grupo.registros.map((r) => {
@@ -1556,16 +1563,20 @@ function gerarPDFFolhaPagamento(registros, filtros) {
 
       // Subtotal do funcionário
       yPos = doc.lastAutoTable.finalY + 5;
-      doc.setFontSize(9);
+      doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(0, 0, 0);
-      doc.text(`Subtotal ${nomeFuncionario}:`, 90, yPos);
-      doc.text(`${totalHorasFuncionario.toFixed(2)}h`, 130, yPos);
+      doc.text(`Subtotal:`, 100, yPos);
+      doc.text(`${totalHorasFuncionario.toFixed(2)}h`, 130, yPos, {
+        align: "right",
+      });
       doc.setTextColor(0, 128, 0);
-      doc.text(`R$ ${totalValorFuncionario.toFixed(2)}`, 155, yPos);
+      doc.text(`R$ ${totalValorFuncionario.toFixed(2)}`, pageWidth - 14, yPos, {
+        align: "right",
+      });
       doc.setTextColor(0, 0, 0);
 
-      yPos += 10;
+      yPos += 12;
     });
 
     // ========== TOTAIS GERAIS ==========

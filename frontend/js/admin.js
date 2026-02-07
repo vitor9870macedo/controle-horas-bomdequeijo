@@ -619,7 +619,8 @@ async function loadRegistros(filtros = {}) {
   try {
     let query = supabase
       .from("registros_ponto")
-      .select("*, funcionarios(nome, valor_hora)")
+      .select("*, funcionarios!inner(nome, valor_hora, ativo)")
+      .eq("funcionarios.ativo", true)
       .order("data", { ascending: false })
       .order("entrada", { ascending: false });
 
@@ -775,8 +776,11 @@ async function updateStats(filtros = {}) {
     // Construir query com filtros
     let query = supabase
       .from("registros_ponto")
-      .select("total_horas, funcionarios(valor_hora)", { count: "exact" })
-      .not("total_horas", "is", null);
+      .select("total_horas, funcionarios!inner(valor_hora, ativo)", {
+        count: "exact",
+      })
+      .not("total_horas", "is", null)
+      .eq("funcionarios.ativo", true);
 
     // Aplicar filtros se existirem
     if (filtros.funcionarioId) {
@@ -954,10 +958,11 @@ async function loadPagamentos(filtros = {}) {
       .select(
         `
         *,
-        funcionarios (id, nome, valor_hora)
+        funcionarios!inner (id, nome, valor_hora, ativo)
       `,
       )
       .not("saida", "is", null)
+      .eq("funcionarios.ativo", true)
       .order("data", { ascending: false });
 
     // Aplicar filtro de funcionário
@@ -1274,7 +1279,8 @@ document.getElementById("gerarPdfBtn").addEventListener("click", async () => {
     // Buscar dados filtrados
     let query = supabase
       .from("registros_ponto")
-      .select("*, funcionarios(nome, valor_hora)")
+      .select("*, funcionarios!inner(nome, valor_hora, ativo)")
+      .eq("funcionarios.ativo", true)
       .not("saida", "is", null)
       .order("data", { ascending: false });
 
@@ -1338,7 +1344,9 @@ function gerarPDFFolhaPagamento(registros, filtros) {
   // Mostrar filtros aplicados
   if (filtros.funcionarioId) {
     const funcionarioNome = registros[0]?.funcionarios?.nome || "N/A";
-    doc.text(`Funcionário: ${funcionarioNome}`, 14, yPos);
+    const funcionarioAtivo = registros[0]?.funcionarios?.ativo;
+    const status = funcionarioAtivo === false ? " (Desativado)" : "";
+    doc.text(`Funcionário: ${funcionarioNome}${status}`, 14, yPos);
     yPos += 6;
   } else {
     doc.text(`Funcionário: Todos`, 14, yPos);
@@ -1477,7 +1485,9 @@ function gerarPDFFolhaPagamento(registros, filtros) {
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(41, 128, 185);
-      doc.text(`${nomeFuncionario}`, 14, yPos);
+      const funcionarioAtivo = grupo.registros[0]?.funcionarios?.ativo;
+      const status = funcionarioAtivo === false ? " (Desativado)" : "";
+      doc.text(`${nomeFuncionario}${status}`, 14, yPos);
       doc.setTextColor(0, 0, 0);
       yPos += 2;
 

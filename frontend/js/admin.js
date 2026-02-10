@@ -959,11 +959,10 @@ async function loadPagamentos(filtros = {}) {
       .select(
         `
         *,
-        funcionarios!inner (id, nome, valor_hora, ativo)
+        funcionarios (id, nome, valor_hora, ativo)
       `,
       )
       .not("saida", "is", null)
-      .eq("funcionarios.ativo", true)
       .order("data", { ascending: false });
 
     // Aplicar filtro de funcionário

@@ -9,16 +9,22 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/frontend/imagens/ponto.png",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23000'/%3E%3Ccircle cx='256' cy='256' r='200' fill='none' stroke='%2300d9ff' stroke-width='20'/%3E%3Cpath d='M256 150 L256 256 L340 340' fill='none' stroke='%2300d9ff' stroke-width='20' stroke-linecap='round'/%3E%3C/svg%3E",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "/frontend/imagens/ponto.png",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23000'/%3E%3Ccircle cx='256' cy='256' r='200' fill='none' stroke='%2300d9ff' stroke-width='20'/%3E%3Cpath d='M256 150 L256 256 L340 340' fill='none' stroke='%2300d9ff' stroke-width='20' stroke-linecap='round'/%3E%3C/svg%3E",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%2300d9ff'/%3E%3Ccircle cx='256' cy='256' r='180' fill='none' stroke='%23000' stroke-width='24'/%3E%3Cpath d='M256 140 L256 256 L340 340' fill='none' stroke='%23000' stroke-width='24' stroke-linecap='round'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }

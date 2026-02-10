@@ -41,14 +41,43 @@
           <div class="form-group">
             <label for="pin">Digite seu PIN (4 dígitos):</label>
             <input
-              type="password"
+              type="text"
               id="pin"
               maxlength="4"
               pattern="[0-9]{4}"
               placeholder="••••"
               required
               autocomplete="off"
+              readonly
             />
+          </div>
+
+          <!-- Teclado Numérico -->
+          <div class="numpad">
+            <button type="button" class="numpad-btn" data-number="1">1</button>
+            <button type="button" class="numpad-btn" data-number="2">2</button>
+            <button type="button" class="numpad-btn" data-number="3">3</button>
+            <button type="button" class="numpad-btn" data-number="4">4</button>
+            <button type="button" class="numpad-btn" data-number="5">5</button>
+            <button type="button" class="numpad-btn" data-number="6">6</button>
+            <button type="button" class="numpad-btn" data-number="7">7</button>
+            <button type="button" class="numpad-btn" data-number="8">8</button>
+            <button type="button" class="numpad-btn" data-number="9">9</button>
+            <button
+              type="button"
+              class="numpad-btn numpad-clear"
+              data-action="clear"
+            >
+              ✕
+            </button>
+            <button type="button" class="numpad-btn" data-number="0">0</button>
+            <button
+              type="button"
+              class="numpad-btn numpad-backspace"
+              data-action="backspace"
+            >
+              ⌫
+            </button>
           </div>
 
           <div class="registro-info" id="ultimoRegistro">
@@ -109,6 +138,25 @@
 
       updateClock();
       setInterval(updateClock, 1000);
+
+      // Teclado numérico
+      const pinInput = document.getElementById("pin");
+      const numpadButtons = document.querySelectorAll(".numpad-btn");
+
+      numpadButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const number = btn.dataset.number;
+          const action = btn.dataset.action;
+
+          if (action === "clear") {
+            pinInput.value = "";
+          } else if (action === "backspace") {
+            pinInput.value = pinInput.value.slice(0, -1);
+          } else if (number && pinInput.value.length < 4) {
+            pinInput.value += number;
+          }
+        });
+      });
     </script>
     <script type="module" src="../js/app.js"></script>
   </body>

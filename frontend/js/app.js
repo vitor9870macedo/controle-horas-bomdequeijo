@@ -252,6 +252,13 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
         return;
       }
 
+      // Buscar valor_hora atual do funcionário
+      const { data: funcData } = await supabase
+        .from("funcionarios")
+        .select("valor_hora")
+        .eq("id", funcionarioId)
+        .single();
+
       // Tentar criar novo registro de entrada
       const { error: insertError } = await supabase
         .from("registros_ponto")
@@ -262,6 +269,7 @@ async function registrarPonto(funcionarioId, acao, botaoClicado) {
             entrada: agora,
             saida: null,
             total_horas: null,
+            valor_hora: funcData?.valor_hora || null,
           },
         ]);
 

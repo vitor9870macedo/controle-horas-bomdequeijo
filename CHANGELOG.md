@@ -1,5 +1,87 @@
 # 📝 Histórico de Alterações - Bom de Queijo
 
+## 🆕 v2.1.0 - Fevereiro 2026 (Congelamento de Valor/Hora e Melhorias)
+
+**Data:** 18/02/2026
+
+### ⭐ Novos Recursos
+
+#### 💰 Congelamento de Valor/Hora
+
+- ✅ Campo `valor_hora` adicionado em `registros_ponto` para preservar histórico salarial
+- ✅ Valor/hora é capturado e congelado no momento do registro
+- ✅ Cálculos financeiros usam valor histórico, não o valor atual
+- ✅ Aviso visual "⚠️ valor mudou" quando valor/hora do registro difere do atual
+- ✅ Migração automática: registros antigos preenchidos com valor atual do funcionário
+
+**Arquivos criados:**
+- `database/add-valor-hora-registros.sql`: Script de migração SQL completo
+
+**Arquivos modificados:**
+- `frontend/js/app.js`: Busca e salva `valor_hora` ao registrar ponto (linha ~257)
+- `frontend/js/admin.js`: 
+  - Usa `registro.valor_hora` com fallback para `funcionario.valor_hora`
+  - Exibe aviso quando valor mudou
+  - Query `updateStats()` inclui campo `valor_hora`
+
+#### ✏️ Edição de Funcionários
+
+- ✅ Modal de edição completo (nome, PIN, valor/hora)
+- ✅ Auto-reload após salvar para garantir sincronização
+- ✅ Validação: PIN deve ter exatamente 4 dígitos
+- ✅ Aviso quando editando valor/hora: "Registros antigos manterão o valor antigo"
+
+**Arquivos modificados:**
+- `frontend/js/admin.js`: Função `mostrarModalEditarFuncionario()` completa
+- `frontend/pages/admin.html`: Estrutura do modal de edição
+
+#### 🗑️ Exclusão de Registros
+
+- ✅ Botão excluir registro (🗑️) funcionando
+- ✅ Event listener global usando delegação de eventos
+- ✅ Confirmação detalhada antes de excluir
+- ✅ Atualização automática de todas as views após exclusão
+
+**Arquivos modificados:**
+- `frontend/js/admin.js`: Event listener movido para escopo global (linha ~547)
+
+#### 🔍 Sincronização de Filtros
+
+- ✅ Filtros da aba "Gestão de Pagamentos" atualizam cards do topo
+- ✅ Filtros principais sincronizam com gestão de pagamentos
+- ✅ Cards de estatísticas (Total a Pagar, Total de Horas) respeitam filtros aplicados
+
+**Arquivos modificados:**
+- `frontend/js/admin.js`: 
+  - `applyPagamentoFiltersBtn` chama `updateStats()` e `loadRegistros()`
+  - `applyFiltersBtn` chama `loadPagamentos()`
+
+### 🐛 Correções
+
+- ✅ Corrigido: `showMessage()` recebia parâmetros incorretos (substituído por `alert()`)
+- ✅ Corrigido: Total a Pagar calculava com valor atual em vez de valor histórico
+- ✅ Corrigido: Event listeners duplicados em elementos dinâmicos
+- ✅ Corrigido: Filtros de pagamento não atualizavam cards do topo
+- ✅ Corrigido: Botão excluir registro não respondia a cliques
+
+### 📊 Migração de Banco de Dados
+
+**Script executado com sucesso:**
+```sql
+-- Adicionar coluna valor_hora
+ALTER TABLE registros_ponto ADD COLUMN IF NOT EXISTS valor_hora NUMERIC(10,2);
+
+-- Preencher registros existentes
+UPDATE registros_ponto rp 
+SET valor_hora = f.valor_hora 
+FROM funcionarios f 
+WHERE rp.funcionario_id = f.id AND rp.valor_hora IS NULL;
+```
+
+**Resultado:** 10 registros migrados com sucesso
+
+---
+
 ## 🆕 v2.0.0 - Janeiro 2026 (Sistema de Auditoria e Confiabilidade)
 
 **Data:** 15/01/2026
